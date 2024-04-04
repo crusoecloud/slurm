@@ -1,0 +1,5 @@
+ansible/inventory/hosts
+.terraform
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup

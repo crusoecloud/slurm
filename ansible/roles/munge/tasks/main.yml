@@ -1,0 +1,20 @@
+- name: Install munge
+  ansible.builtin.apt:
+    name:
+      - libmunge-dev
+      - libmunge2
+      - munge
+    state: latest
+    update_cache: yes
+- name: Install munge.key
+  ansible.builtin.copy:
+    dest: "/etc/munge/munge.key"
+    content: "{{munge_key}}"
+    owner: munge
+    group: munge
+    mode: "0600"
+- name: Restart munge service
+  ansible.builtin.systemd_service:
+    name: munge
+    state: restarted
+    enabled: true

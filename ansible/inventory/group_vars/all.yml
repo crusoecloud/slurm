@@ -1,0 +1,8 @@
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+ansible_ssh_timeout: 300
+ansible_ssh_retries: 5
+
+instance_class: "{{ instance_type.split('.')[0] }}"
+instance_size: "{{ instance_type.split('.')[1][:-1] }}"
+
+munge_key: "01234567012345670123456701234567"

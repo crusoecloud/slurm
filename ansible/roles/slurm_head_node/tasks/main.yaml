@@ -1,0 +1,21 @@
+- name: Install slurm
+  ansible.builtin.apt:
+    name: slurm-wlm
+    state: latest
+    update_cache: yes
+- name: Install slurm.conf
+  ansible.builtin.template:
+    src: slurm.conf
+    dest: /etc/slurm/slurm.conf
+- name: Install gres.conf
+  ansible.builtin.template:
+    src: gres.conf
+    dest: /etc/slurm/gres.conf
+    owner: root
+    group: root
+    mode: '0755'
+- name: Restart slurmctld
+  ansible.builtin.systemd_service:
+    name: slurmctld
+    state: restarted
+    enabled: true

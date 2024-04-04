@@ -1,0 +1,18 @@
+- hosts: all
+  remote_user: ubuntu
+  become: yes
+  roles:
+    - categorize
+    - munge
+
+- hosts: slurm_head_nodes
+  remote_user: ubuntu
+  become: yes
+  roles:
+    - slurm_head_node
+
+- hosts: slurm_compute_nodes
+  remote_user: ubuntu
+  become: yes
+  roles:
+    - slurm_compute_node
