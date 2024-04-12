@@ -24,6 +24,16 @@ resource "crusoe_compute_instance" "slurm_head_node" {
   image      = "ubuntu22.04:latest"
 }
 
+resource "crusoe_compute_instance" "slurm_login_node" {
+  count      = 1
+  name       = "slurm-login-node-${count.index}"
+  type       = "c1a.8x"
+  ssh_key    = local.ssh_public_key
+  location   = local.location
+  project_id = local.project_id
+  image      = "ubuntu22.04:latest"
+}
+
 resource "crusoe_compute_instance" "slurm_compute_node" {
   count    = 8
   name     = "slurm-compute-node-${count.index}"
@@ -41,6 +51,7 @@ resource "local_file" "ansible_inventory" {
   content = templatefile("inventory.tmpl",
     {
       slurm_head_nodes = crusoe_compute_instance.slurm_head_node.*,
+      slurm_login_nodes = crusoe_compute_instance.slurm_login_node.*,
       slurm_compute_nodes = crusoe_compute_instance.slurm_compute_node.*
     }
   )
