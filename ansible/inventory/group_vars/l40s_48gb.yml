@@ -1,0 +1,4 @@
+gpu_type: l40s-48gb-pcie
+gpu_count: "{{ instance_size }}"
+cpu_count: 80
+threads_per_core: 2

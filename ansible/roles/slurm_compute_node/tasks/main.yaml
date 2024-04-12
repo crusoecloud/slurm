@@ -1,6 +1,8 @@
 - name: Install slurm
   ansible.builtin.apt:
-    name: slurm-wlm
+    name:
+      - slurmd
+      - slurm-client
     state: latest
     update_cache: yes
 - name: Create slurmd.service.d directory

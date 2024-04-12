@@ -1,6 +1,8 @@
 - name: Install slurm
   ansible.builtin.apt:
-    name: slurm-wlm
+    name:
+      - slurmctld
+      - slurm-client
     state: latest
     update_cache: yes
 - name: Install slurm.conf

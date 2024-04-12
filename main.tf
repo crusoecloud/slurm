@@ -25,7 +25,7 @@ resource "crusoe_compute_instance" "slurm_head_node" {
 }
 
 resource "crusoe_compute_instance" "slurm_login_node" {
-  count      = 1
+  count      = 2
   name       = "slurm-login-node-${count.index}"
   type       = "c1a.8x"
   ssh_key    = local.ssh_public_key
