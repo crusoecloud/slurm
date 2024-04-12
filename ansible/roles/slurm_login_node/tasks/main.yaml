@@ -1,0 +1,25 @@
+- name: Install slurm
+  ansible.builtin.apt:
+    name: slurm-wlm
+    state: latest
+    update_cache: yes
+- name: Create slurmd.service.d directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/slurmd.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+- name: Install override.conf
+  ansible.builtin.template:
+    src: override.conf
+    dest: /etc/systemd/system/slurmd.service.d/override.conf
+    owner: root
+    group: root
+    mode: '0755'
+- name: Restart slurmd
+  ansible.builtin.systemd_service:
+    name: slurmd
+    state: restarted
+    enabled: true
+    daemon_reload: true
