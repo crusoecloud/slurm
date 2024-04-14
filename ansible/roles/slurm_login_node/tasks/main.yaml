@@ -19,6 +19,10 @@
     owner: root
     group: root
     mode: '0755'
+- name: Install pyxis
+  tags: pyxis
+  ansible.builtin.import_role:
+    name: pyxis
 - name: Restart slurmd
   ansible.builtin.systemd_service:
     name: slurmd

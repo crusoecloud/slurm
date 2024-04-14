@@ -33,15 +33,19 @@
     owner: root
     group: root
     mode: '0755'
+- name: Install enroot
+  tags: enroot
+  ansible.builtin.import_role:
+    name: nvidia.enroot
+  vars:
+    enroot_version: "3.4.1"
+- name: Install pyxis
+  tags: pyxis
+  ansible.builtin.import_role:
+    name: pyxis
 - name: Restart slurmd
   ansible.builtin.systemd_service:
     name: slurmd
     state: restarted
     enabled: true
     daemon_reload: true
-- name: Install NVIDIA Enroot
-  tags: enroot
-  ansible.builtin.import_role:
-    name: nvidia.enroot
-  vars:
-    enroot_version: "3.4.1"
