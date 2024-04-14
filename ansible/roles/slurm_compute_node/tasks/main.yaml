@@ -19,9 +19,29 @@
     owner: root
     group: root
     mode: '0755'
+- name: Copy prolog.sh
+  ansible.builtin.copy:
+    src: prolog.sh
+    dest: /etc/slurm/prolog.sh
+    owner: root
+    group: root
+    mode: '0755'
+- name: Copy epilog.sh
+  ansible.builtin.copy:
+    src: epilog.sh
+    dest: /etc/slurm/epilog.sh
+    owner: root
+    group: root
+    mode: '0755'
 - name: Restart slurmd
   ansible.builtin.systemd_service:
     name: slurmd
     state: restarted
     enabled: true
     daemon_reload: true
+- name: Install NVIDIA Enroot
+  tags: enroot
+  ansible.builtin.import_role:
+    name: nvidia.enroot
+  vars:
+    enroot_version: "3.4.1"

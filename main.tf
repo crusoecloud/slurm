@@ -10,7 +10,7 @@ terraform {
 locals {
   ssh_public_key = file("~/.ssh/id_ed25519.pub")
   location = "us-southcentral1-a"
-  project_id = "198f5277-26f7-48bf-b97e-8b9b91d03b00"
+  project_id = "50993d81-b4a1-4887-b78f-b3d824f2ba15"
   ib_partition_id = "c42dbe62-31fd-476b-bf07-d948bb303ec6"
 }
 
@@ -37,7 +37,7 @@ resource "crusoe_compute_instance" "slurm_login_node" {
 resource "crusoe_compute_instance" "slurm_compute_node" {
   count    = 8
   name     = "slurm-compute-node-${count.index}"
-  type     = "h100-80gb-sxm-ib.8x"
+  type       = "h100-80gb-sxm-ib.8x"
   ssh_key  = local.ssh_public_key
   location = local.location
   project_id = local.project_id
@@ -56,6 +56,10 @@ resource "local_file" "ansible_inventory" {
     }
   )
   filename = "ansible/inventory/hosts"
+
+  provisioner "local-exec" {
+    command = "ansible-galaxy install -r ansible/roles/requirements.yml"
+  }
 
   provisioner "local-exec" {
     command = "ansible-playbook -i ansible/inventory/hosts ansible/slurm.yml -f 32"
