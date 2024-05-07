@@ -1,0 +1,2 @@
+cpu_count: "{{ instance_size }}"
+threads_per_core: 2

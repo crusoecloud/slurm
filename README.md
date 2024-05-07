@@ -5,6 +5,13 @@ terraform init
 terraform apply
 ```
 
+## Supported Compute Instance Types
+This solution supports the following Crusoe Cloud compute instance types:
+1. `h100-80gb-sxm-ib`
+2. `a100-80gb-sxm-ib`
+3. `l40s`
+4. `c1a`
+
 ## How do I customize the cluster?
 By default, this solution will create a high-availability SLURM cluster with 2 `c1a.8x` head nodes and 8 `h100-80gb-sxm.8x` compute nodes. Edit the `main.tf` file to change the compute instance type or count.
 
