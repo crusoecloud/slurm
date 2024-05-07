@@ -10,14 +10,14 @@ terraform {
 locals {
   ssh_public_key = file("~/.ssh/id_ed25519.pub")
   location = "us-southcentral1-a"
-  project_id = "50993d81-b4a1-4887-b78f-b3d824f2ba15"
-  ib_partition_id = "c42dbe62-31fd-476b-bf07-d948bb303ec6"
+  project_id = "198e7c51-9ed2-41db-b3c8-baeee40d7592"
+  ib_partition_id = "7a7d2ad5-2115-4eed-99c7-e35c1b8f4c96"
 }
 
 resource "crusoe_compute_instance" "slurm_head_node" {
   count      = 2
   name       = "slurm-head-node-${count.index}"
-  type       = "c1a.8x"
+  type       = "c1a.2x"
   ssh_key    = local.ssh_public_key
   location   = local.location
   project_id = local.project_id
@@ -27,7 +27,7 @@ resource "crusoe_compute_instance" "slurm_head_node" {
 resource "crusoe_compute_instance" "slurm_login_node" {
   count      = 2
   name       = "slurm-login-node-${count.index}"
-  type       = "c1a.8x"
+  type       = "c1a.2x"
   ssh_key    = local.ssh_public_key
   location   = local.location
   project_id = local.project_id
@@ -35,7 +35,7 @@ resource "crusoe_compute_instance" "slurm_login_node" {
 }
 
 resource "crusoe_compute_instance" "slurm_compute_node" {
-  count    = 8
+  count    = 4
   name     = "slurm-compute-node-${count.index}"
   type       = "h100-80gb-sxm-ib.8x"
   ssh_key  = local.ssh_public_key
