@@ -1,0 +1,65 @@
+- name: Check if /home is mounted
+  tags: nfs_server
+  debug: msg="/home is mounted"
+  with_items: "{{ ansible_mounts }}"
+  when: item.mount == "/home"
+  register: home_mount_exists
+
+- name: Create a ext4 filesystem on /dev/vdb
+  tags: nfs_server
+  community.general.filesystem:
+    fstype: ext4
+    dev: /dev/vdb
+    
+- name: Mount vdb to /mnt/home
+  tags: nfs_server
+  ansible.posix.mount:
+    path: /mnt/home
+    src: /dev/vdb
+    fstype: ext4
+    state: mounted
+  when: home_mount_exists is skipped
+
+- name: Copy /home to /mnt/home
+  tags: nfs_server
+  command: "rsync -a /home/ /mnt/home"
+  when: home_mount_exists is skipped
+
+- name: Unmount vdb to /mnt/home
+  tags: nfs_server
+  ansible.posix.mount:
+    path: /mnt/home
+    src: /dev/vdb
+    fstype: ext4
+    state: unmounted
+
+- name: Mount vdb to /home
+  tags: nfs_server
+  ansible.posix.mount:
+    path: /home
+    src: /dev/vdb
+    fstype: ext4
+    state: mounted
+
+- name: Install nfs-server
+  tags: nfs_server
+  ansible.builtin.apt:
+    name: nfs-server
+    state: latest
+    update_cache: yes
+
+- name: Copy /etc/exports
+  tags: nfs_server
+  ansible.builtin.template:
+    src: exports
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Restart nfs-server service
+  tags: nfs_server
+  ansible.builtin.systemd_service:
+    name: nfs-server
+    state: restarted
+    enabled: true
