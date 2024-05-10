@@ -1,0 +1,27 @@
+- name: Install nfs-client
+  tags: nfs_client
+  ansible.builtin.apt:
+    name: 
+      - nfs-common
+      - autofs
+    state: latest
+    update_cache: yes
+
+- name: Add /home entry to /etc/auto.master
+  tags: nfs_client
+  ansible.builtin.lineinfile:
+    path: /etc/auto.master
+    line: /home /etc/auto.home
+
+- name: Copy /etc/auto.home
+  tags: nfs_client
+  ansible.builtin.copy:
+    src: auto.home
+    dest: /etc/auto.home
+
+- name: Restart autofs
+  tags: nfs_client
+  ansible.builtin.systemd_service:
+    name: autofs
+    state: restarted
+    enabled: true

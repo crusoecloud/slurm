@@ -12,3 +12,8 @@ ${slurm_compute_node.name} ansible_host=${slurm_compute_node.network_interfaces[
 %{ for slurm_login_node in slurm_login_nodes ~}
 ${slurm_login_node.name} ansible_host=${slurm_login_node.network_interfaces[0].public_ipv4.address} instance_type=${slurm_login_node.type}
 %{ endfor ~}
+
+[slurm_nfs_nodes]
+%{ for slurm_nfs_node in slurm_nfs_nodes ~}
+${slurm_nfs_node.name} ansible_host=${slurm_nfs_node.network_interfaces[0].public_ipv4.address} instance_type=${slurm_nfs_node.type}
+%{ endfor ~}
