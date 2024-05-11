@@ -1,5 +1,5 @@
 # SLURM
-This repository is the simplest way to create a high-availability SLURM cluster on Crusoe Cloud. To get started, edit the `main.tf` with your project specific configuration and run:
+This repository is the simplest way to create a high-availability SLURM cluster on Crusoe Cloud. To get started, create a file named `terraform.tfvars` with the cluster parameters. For example `.tfvars` files, see the `examples` directory.
 ```
 terraform init
 terraform apply
