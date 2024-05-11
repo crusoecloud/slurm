@@ -7,27 +7,18 @@ terraform init
 terraform apply
 ```
 
-## Supported Compute Instance Types
-This solution supports the following Crusoe Cloud compute instance types:
-* `h100-80gb-sxm-ib`
-* `a100-80gb-sxm-ib`
-* `l40s-48gb`
-* `a100-80gb`
-* `a100`
-* `a40`
-* `s1a`
-* `c1a`
-
 ## What is provided by the cluster?
+![cluster architecture](docs/img/slurm.png)
+
 By default, this solution will create a high-availability SLURM cluster with:
 * 2 `c1a.16x` head nodes
 * 2 `c1a.16x` login nodes
 * 1 `s1a.80x` nfs node
+* n compute nodes of any instance type.
 
 The `slurm-nfs-node-0` exports a `/home` directory backed by a 10 TiB persistent
-SSD. The `/home` nfs directory is mounted by all login nodes and all compute nodes.
-
-This solution provides support for [NVIDIA Pyxis](https://github.com/NVIDIA/pyxis)
+SSD. The `/home` nfs directory is mounted by all login nodes and all compute nodes. This
+solution provides support for [NVIDIA Pyxis](https://github.com/NVIDIA/pyxis) 
 and [Enroot](https://github.com/nvidia/enroot).
 
 ## How do I handle a head node outage?
