@@ -1,4 +1,5 @@
 gpu_type: h100-80gb-sxm
 gpu_count: "{{ instance_size }}"
 cpu_count: "{{ (instance_size | int) * 22 }}"
+real_memory: "{{ (instance_size | int) * 120320 }}"
 threads_per_core: 2

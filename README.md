@@ -1,5 +1,5 @@
 # SLURM
-This repository is the simplest way to create a high-availability SLURM cluster on Crusoe Cloud.
+This repository is the simplest way to create a high-availability SLURM cluster on Crusoe Cloud. To get started, edit the `main.tf` with your project specific configuration and run:
 ```
 terraform init
 terraform apply
@@ -7,10 +7,14 @@ terraform apply
 
 ## Supported Compute Instance Types
 This solution supports the following Crusoe Cloud compute instance types:
-1. `h100-80gb-sxm-ib`
-2. `a100-80gb-sxm-ib`
-3. `l40s-48gb`
-4. `c1a`
+* `h100-80gb-sxm-ib`
+* `a100-80gb-sxm-ib`
+* `l40s-48gb`
+* `a100-80gb`
+* `a100`
+* `a40`
+* `s1a`
+* `c1a`
 
 ## What is provided by the cluster?
 By default, this solution will create a high-availability SLURM cluster with:
@@ -20,6 +24,8 @@ By default, this solution will create a high-availability SLURM cluster with:
 * 8 `h100-80gb-sxm.8x` compute nodes.
 
 The `slurm-nfs-node-0` exports a `/home` directory backed by a 10 TiB persistent SSD. The `/home` nfs directory is mounted by all login nodes and all compute nodes.
+
+This solution provides support for [NVIDIA Pyxis](https://github.com/NVIDIA/pyxis) and [Enroot](https://github.com/nvidia/enroot).
 
 ## How do I customize the cluster?
 Edit the `main.tf` file to change the compute instance type or count.
