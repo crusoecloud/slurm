@@ -3,3 +3,4 @@ ansible/inventory/hosts
 .terraform.lock.hcl
 terraform.tfstate
 terraform.tfstate.*
+terraform.tfvars

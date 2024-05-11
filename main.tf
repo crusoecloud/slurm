@@ -32,7 +32,7 @@ resource "crusoe_compute_instance" "slurm_login_node" {
 
 resource "crusoe_storage_disk" "slurm_nfs_home" {
   name = "slurm-nfs-home"
-  size = "10240GiB"
+  size = var.slurm_nfs_home_size
   location = var.location
   project_id = var.project_id
 }
@@ -40,7 +40,7 @@ resource "crusoe_storage_disk" "slurm_nfs_home" {
 resource "crusoe_compute_instance" "slurm_nfs_node" {
   count      = 1
   name       = "slurm-nfs-node-${count.index}"
-  type       = "s1a.80x"
+  type       = var.slurm_nfs_node_type
   ssh_key    = local.ssh_public_key
   location   = var.location
   project_id = var.project_id
@@ -52,6 +52,9 @@ resource "crusoe_compute_instance" "slurm_nfs_node" {
   }]
 }
 
+# If an ib_network_id is defined, create an infiniband partition for the slurm
+# compute nodes. This is only necessary / possible on compute instance types
+# that support infiniband.
 resource "crusoe_ib_partition" "slurm_ib_partition" {
   count = var.slurm_compute_node_ib_network_id != null ? 1: 0
   ib_network_id = var.slurm_compute_node_ib_network_id

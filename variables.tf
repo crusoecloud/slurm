@@ -25,6 +25,18 @@ variable "slurm_login_node_count" {
   default     = 2
 }
 
+variable "slurm_nfs_node_type" {
+  description = "The slurm nfs node instance type."
+  type        = string
+  default     = "s1a.80x"
+}
+
+variable "slurm_nfs_home_size" {
+  description = "The slurm nfs host size."
+  type        = string
+  default     = "10240GiB"
+}
+
 variable "slurm_compute_node_type" {
   description = "The slurm compute node instance type."
   type        = string
