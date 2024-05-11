@@ -21,19 +21,10 @@ By default, this solution will create a high-availability SLURM cluster with:
 * 2 `c1a.2x` head nodes
 * 2 `c1a.2x` login nodes
 * 1 `s1a.20x` nfs node
-* 8 `h100-80gb-sxm.8x` compute nodes.
 
 The `slurm-nfs-node-0` exports a `/home` directory backed by a 10 TiB persistent SSD. The `/home` nfs directory is mounted by all login nodes and all compute nodes.
 
 This solution provides support for [NVIDIA Pyxis](https://github.com/NVIDIA/pyxis) and [Enroot](https://github.com/nvidia/enroot).
-
-## How do I customize the cluster?
-Edit the `main.tf` file to change the compute instance type or count.
-
-In order to update the configuration on an active cluster, re-run the Ansible playbook provided as part of this solution.
-```
-ansible-playbook -i ansible/inventory/hosts ansible/slurm.yml -f 32
-```
 
 ## How do I handle a head node outage?
 This solution utilizes a secondary head-node that will take over within 10 seconds if the primary head-node stops responding. As long as at least one head-node is still responsive, the cluster will remain usable.
@@ -59,7 +50,3 @@ sinfo
 PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST
 batch*       up   infinite      8   idle slurm-compute-node-[0-7]
 ```
-
-## How do I resize the cluster?
-To change the number of compute nodes in the cluster, modify the `count` argument within
-the `slurm_compute_node` resource in the `main.tf` file and run `terraform apply`.

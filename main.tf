@@ -32,7 +32,7 @@ resource "crusoe_compute_instance" "slurm_login_node" {
 
 resource "crusoe_storage_disk" "slurm_nfs_home" {
   name = "slurm-nfs-home"
-  size = "10TiB"
+  size = "10240GiB"
   location = var.location
   project_id = var.project_id
 }
@@ -75,12 +75,21 @@ resource "local_file" "ansible_inventory" {
     }
   )
   filename = "ansible/inventory/hosts"
+}
+
+resource "null_resource" "ansible_playbook" {
+  # Always run ansible-playbook.
+  triggers = {
+    always_run = "${timestamp()}"
+  }
 
   provisioner "local-exec" {
     command = "ansible-galaxy install -r ansible/roles/requirements.yml"
   }
 
   provisioner "local-exec" {
-    command = "ansible-playbook -i ansible/inventory/hosts ansible/slurm.yml -f 32"
+    command = "ansible-playbook -i ansible/inventory/hosts ansible/slurm.yml -f 128"
   }
+
+  depends_on = [local_file.ansible_inventory]
 }
