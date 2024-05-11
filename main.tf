@@ -56,16 +56,16 @@ resource "crusoe_compute_instance" "slurm_nfs_node" {
 }
 
 resource "crusoe_compute_instance" "slurm_compute_node" {
-  count    = 4
+  count    = 8
   name     = "slurm-compute-node-${count.index}"
-  type       = "l40s-48gb.10x"
+  type       = "h100-80gb-sxm-ib.8x"
   ssh_key  = local.ssh_public_key
   location = local.location
   project_id = local.project_id
-  image    = "ubuntu22.04-nvidia-pcie-docker:latest"
-  # host_channel_adapters = [{
-  #   ib_partition_id = local.ib_partition_id
-  # }]
+  image    = "ubuntu22.04-nvidia-sxm-docker:latest"
+  host_channel_adapters = [{
+    ib_partition_id = local.ib_partition_id
+  }]
 }
 
 resource "local_file" "ansible_inventory" {

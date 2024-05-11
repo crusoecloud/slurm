@@ -24,6 +24,11 @@ The `slurm-nfs-node-0` exports a `/home` directory backed by a 10 TiB persistent
 ## What is customize the cluster?
 Edit the `main.tf` file to change the compute instance type or count.
 
+In order to update the configuration on an active cluster, re-run the Ansible playbook provided as part of this solution.
+```
+ansible-playbook -i ansible/inventory/hosts ansible/slurm.yml -f 32
+```
+
 ## How do I handle a head node outage?
 This solution utilizes a secondary head-node that will take over within 10 seconds if the primary head-node stops responding. As long as at least one head-node is still responsive, the cluster will remain usable.
 
