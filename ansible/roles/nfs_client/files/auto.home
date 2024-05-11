@@ -1,1 +1,1 @@
-* slurm-nfs-node-0.us-east1-a.compute.internal:/home/&
+* {{hostvars['slurm-nfs-node-0'].ansible_fqdn}}:/home/&
