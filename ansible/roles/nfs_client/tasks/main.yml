@@ -15,7 +15,7 @@
 
 - name: Copy /etc/auto.home
   tags: nfs_client
-  ansible.builtin.copy:
+  ansible.builtin.template:
     src: auto.home
     dest: /etc/auto.home
 
