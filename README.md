@@ -18,9 +18,9 @@ This solution supports the following Crusoe Cloud compute instance types:
 
 ## What is provided by the cluster?
 By default, this solution will create a high-availability SLURM cluster with:
-* 2 `c1a.2x` head nodes
-* 2 `c1a.2x` login nodes
-* 1 `s1a.20x` nfs node
+* 2 `c1a.16x` head nodes
+* 2 `c1a.16x` login nodes
+* 1 `s1a.80x` nfs node
 
 The `slurm-nfs-node-0` exports a `/home` directory backed by a 10 TiB persistent SSD. The `/home` nfs directory is mounted by all login nodes and all compute nodes.
 

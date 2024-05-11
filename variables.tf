@@ -26,7 +26,7 @@ variable "slurm_login_node_count" {
 }
 
 variable "slurm_compute_node_type" {
-  description = "The slurm compute nodes instance type."
+  description = "The slurm compute node instance type."
   type        = string
 }
 
@@ -35,8 +35,8 @@ variable "slurm_compute_node_count" {
   type        = number
 }
 
-variable "slurm_compute_node_ib_partition_id" {
-  description = "The ib partition in which to create the cluster."
+variable "slurm_compute_node_ib_network_id" {
+  description = "The ib network in which to create the cluster."
   type        = string
   default     = null
 }
