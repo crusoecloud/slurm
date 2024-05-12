@@ -1,1 +1,4 @@
 /home *(rw,async,no_root_squash,no_subtree_check)
+{% if (disk_count | int) > 0 %}
+/scratch/shared *(rw,async,no_root_squash,no_subtree_check)
+{% endif %}

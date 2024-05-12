@@ -1,0 +1,6 @@
+- name: Configure raid0
+  ansible.builtin.import_role:
+    name: raid0
+  vars:
+    raid0_mount_path: /scratch/shared
+  when: (disk_count | int) > 0

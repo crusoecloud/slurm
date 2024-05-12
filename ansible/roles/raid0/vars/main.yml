@@ -1,0 +1,2 @@
+raid0_mount_path: /raid0
+raid0_mount_name: "{{ raid0_mount_path | regex_replace('^/?(.*)$', '\\1') | replace('/', '-') }}.mount"

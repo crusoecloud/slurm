@@ -3,7 +3,7 @@ N=$1
 
 if [ ! -b /dev/disk/by-id/md-name-ephemeral ]; then
     echo "info: creating md dev"
-    mdadm --create /dev/md127 --name=ephemeral --level=0 --raid-devices=$N /dev/nvme[0-$(($N - 1))]n1
+    mdadm --create /dev/md127 --force --name=ephemeral --level=0 --raid-devices=$N /dev/nvme[0-$(($N - 1))]n1
     if [ $? -ne 0 ]; then
         echo "error: failed to create md dev"
         exit 1

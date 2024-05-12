@@ -4,7 +4,7 @@ After=raid0.service
 
 [Mount]
 What=/dev/disk/by-id/md-name-ephemeral
-Where=/raid0
+Where={{ raid0_mount_path }}
 Type=ext4
 Options=defaults
 

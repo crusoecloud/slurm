@@ -17,13 +17,45 @@ By default, this solution will create a high-availability SLURM cluster with:
 * 1 `s1a.80x` nfs node
 * n compute nodes of any instance type.
 
-## NFS storage
-The `slurm-nfs-node-0` node exports a `/home` directory that is mounted by all login nodes and
-all compute nodes. 
+## Storage
+![storage architecture](docs/img/slurm-storage.png)
+
+This solution currently supports three tiers of storage:
+
+### Local Scratch
+Each `slurm-compute-node` instance supports up to `7.5 TiB` of local scratch
+storage, depending on the instance type. If present, scratch storage is located
+at `/scratch/local`.  The local scratch storage is erased whenever the compute
+node is stopped.
+
+The local scratch size on common compute node instance types are:
+* `a40.8x`: 7.5 TiB
+* `100.8x`: 7.5 TiB
+* `a100-80gb.8x`: 7.5 TiB
+* `a100-80gb-sxm-ib.8x`: 7.5 TiB
+* `h100-80gb-sxm-ib.8x`: 7.5 TiB
+* `l40s-48gb.8x`: None
+* `c1a.176x`: None
+
+### Shared Scratch
+Each cluster supports up to `51.2 TiB` of shared scratch storage, depending on
+the instance type of `slurm-nfs-node-0`. This scratch storage is located at
+`/scratch/shared`. The shared scratch storage is erased whenever
+`slurm-nfs-node-0` is stopped.
 
 The `slurm_nfs_node_type` variable can optionally be set in the `terraform.tfvars` file
 to configure the instance type used to create `slurm-nfs-node-0`. If left unconfigured,
 this will default to `s1a.80x`.
+
+The remote scratch size on common nfs node instance types are:
+* `s1a.80x`: 51.2 TiB
+* `s1a.40x`: 25.6 TiB
+* `c1a.176x`: None
+
+### Shared.
+The `slurm-nfs-node-0` node exports a persistent `/home` directory that is mounted by
+all login nodes and all compute nodes. This offers up to `10 TiB` of persistent shared
+storage.
 
 The `slurm_nfs_home_size` variable can optionally be set in the `terraform.tfvars` file
 to configure the size of the `/home` nfs share. If left unconfigured, this will default
@@ -31,10 +63,7 @@ to 10 TiB. Note that `10 TiB` is the maximum currently supported by Crusoe Cloud
 
 ## Enroot and Pyxis
 This solution provides support for [NVIDIA Enroot](https://github.com/nvidia/enroot)
-and [Pyxis](https://github.com/NVIDIA/pyxis). On all
-[instance types with local ephemeral disks](https://docs.crusoecloud.com/compute/virtual-machines/overview/index.html),
-the disks are combined with `raid 0`, formatted with an `ext4` filesystem, and mounted
-at `/raid0`. This can serve as a scratch space for enroot images.
+and [Pyxis](https://github.com/NVIDIA/pyxis).
 
 ## How do I handle a head node outage?
 This solution utilizes a secondary head-node that will take over within 10

@@ -15,9 +15,9 @@
     mode: '0644'
 
 - name: Copy raid0.mount
-  ansible.builtin.copy:
+  ansible.builtin.template:
     src: raid0.mount
-    dest: /etc/systemd/system/raid0.mount
+    dest: "/etc/systemd/system/{{ raid0_mount_name }}"
     owner: root
     group: root
     mode: '0644'
@@ -34,6 +34,6 @@
 
 - name: Restart raid0 mount
   ansible.builtin.systemd_service:
-    name: raid0.mount
+    name: "{{ raid0_mount_name }}"
     state: restarted
     enabled: true

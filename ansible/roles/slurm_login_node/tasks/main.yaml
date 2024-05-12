@@ -1,3 +1,11 @@
+- name: Mount /scratch/shared
+  ansible.posix.mount:
+    src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/scratch/shared"
+    path: /scratch/shared
+    opts: rw,sync,soft
+    state: mounted
+    fstype: nfs
+  when: "{{ (hostvars['slurm-nfs-node-0'].disk_count | int) > 0 }}"
 - name: Install slurm
   ansible.builtin.apt:
     name:

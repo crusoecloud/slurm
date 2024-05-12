@@ -1,3 +1,19 @@
+- name: Mount /scratch/local
+  ansible.builtin.import_role:
+    name: raid0
+  vars:
+    raid0_mount_path: /scratch/local
+  when: (disk_count | int) > 0
+
+- name: Mount /scratch/shared
+  ansible.posix.mount:
+    src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/scratch/shared"
+    path: /scratch/shared
+    opts: rw,sync,soft
+    state: mounted
+    fstype: nfs
+  when: "{{ (hostvars['slurm-nfs-node-0'].disk_count | int) > 0 }}"
+
 - name: Install slurm
   ansible.builtin.apt:
     name:
@@ -33,10 +49,6 @@
     owner: root
     group: root
     mode: '0755'
-- name: Configure enroot data fs
-  ansible.builtin.import_role:
-    name: raid0
-  when: disk_count is defined and (disk_count | int) > 0
 - name: Install enroot
   tags: enroot
   ansible.builtin.import_role:

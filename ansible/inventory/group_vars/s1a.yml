@@ -1,4 +1,4 @@
 cpu_count: "{{ instance_size }}"
 real_memory: "{{ (instance_size | int) * 8832 }}"
-disk_count: "{{ instance_size }}"
+disk_count: "{{ (instance_size | int) // 20 }}"
 threads_per_core: 2
