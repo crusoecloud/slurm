@@ -1,0 +1,12 @@
+[Unit]
+Description=raid0
+After=raid0.service
+
+[Mount]
+What=/dev/disk/by-id/md-name-ephemeral
+Where=/raid0
+Type=ext4
+Options=defaults
+
+[Install]
+WantedBy=multi-user.target

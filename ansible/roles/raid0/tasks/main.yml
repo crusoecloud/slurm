@@ -1,0 +1,39 @@
+- name: Copy raid0.sh
+  ansible.builtin.copy:
+    src: raid0.sh
+    dest: /usr/sbin/raid0.sh
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy raid0.service
+  ansible.builtin.template:
+    src: raid0.service
+    dest: /etc/systemd/system/raid0.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy raid0.mount
+  ansible.builtin.copy:
+    src: raid0.mount
+    dest: /etc/systemd/system/raid0.mount
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload systemd configs
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: Restart raid0 service
+  ansible.builtin.systemd_service:
+    name: raid0.service
+    state: restarted
+    enabled: true
+
+- name: Restart raid0 mount
+  ansible.builtin.systemd_service:
+    name: raid0.mount
+    state: restarted
+    enabled: true

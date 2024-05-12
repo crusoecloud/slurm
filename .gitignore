@@ -4,3 +4,4 @@ ansible/inventory/hosts
 terraform.tfstate
 terraform.tfstate.*
 terraform.tfvars
+terraform.tfvars.*

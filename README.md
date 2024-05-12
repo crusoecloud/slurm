@@ -1,6 +1,7 @@
 # SLURM
-This repository is the simplest way to create a high-availability SLURM cluster on
-Crusoe Cloud. To get started, create a file named `terraform.tfvars` with the cluster
+This repository is the simplest way to create a high-availability
+[SLURM](https://slurm.schedmd.com/quickstart.html) cluster on Crusoe Cloud.
+To get started, create a file named `terraform.tfvars` with the cluster
 parameters. For example `.tfvars` files, see the `examples` directory.
 ```
 terraform init
@@ -16,10 +17,16 @@ By default, this solution will create a high-availability SLURM cluster with:
 * 1 `s1a.80x` nfs node
 * n compute nodes of any instance type.
 
+## NFS storage
 The `slurm-nfs-node-0` exports a `/home` directory backed by a 10 TiB persistent
-SSD. The `/home` nfs directory is mounted by all login nodes and all compute nodes. This
-solution provides support for [NVIDIA Pyxis](https://github.com/NVIDIA/pyxis) 
-and [Enroot](https://github.com/nvidia/enroot).
+SSD. The `/home` nfs directory is mounted by all login nodes and all compute nodes. 
+
+## Enroot and Pyxis
+This solution provides support for [NVIDIA Enroot](https://github.com/nvidia/enroot)
+and [Pyxis](https://github.com/NVIDIA/pyxis). On all
+[instance types with local ephemeral disks](https://docs.crusoecloud.com/compute/virtual-machines/overview/index.html),
+the disks are combined with `raid 0`, formatted with an `ext4` filesystem, and mounted
+at `/raid0`. This can serve as a scratch space for enroot images.
 
 ## How do I handle a head node outage?
 This solution utilizes a secondary head-node that will take over within 10
