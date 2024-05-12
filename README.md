@@ -18,8 +18,16 @@ By default, this solution will create a high-availability SLURM cluster with:
 * n compute nodes of any instance type.
 
 ## NFS storage
-The `slurm-nfs-node-0` exports a `/home` directory backed by a 10 TiB persistent
-SSD. The `/home` nfs directory is mounted by all login nodes and all compute nodes. 
+The `slurm-nfs-node-0` node exports a `/home` directory that is mounted by all login nodes and
+all compute nodes. 
+
+The `slurm_nfs_node_type` variable can optionally be set in the `terraform.tfvars` file
+to configure the instance type used to create `slurm-nfs-node-0`. If left unconfigured,
+this will default to `s1a.80x`.
+
+The `slurm_nfs_home_size` variable can optionally be set in the `terraform.tfvars` file
+to configure the size of the `/home` nfs share. If left unconfigured, this will default
+to 10 TiB. Note that `10 TiB` is the maximum currently supported by Crusoe Cloud.
 
 ## Enroot and Pyxis
 This solution provides support for [NVIDIA Enroot](https://github.com/nvidia/enroot)
