@@ -1,0 +1,34 @@
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - make
+      - bzip2
+      - libevent-dev
+      - libhwloc-dev
+
+- name: "Create /opt/pmix/src directory"
+  file:
+    path: /opt/pmix/src
+    state: directory
+
+- name: "Download pmix-{{ pmix_version }}"
+  ansible.builtin.get_url:
+    url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2"
+    dest: "/opt/pmix/src/pmix-{{ pmix_version }}.tar.bz2"
+    checksum: "{{ pmix_checksum }}"
+
+- name: "Unarchive pmix-{{ pmix_version }}"
+  ansible.builtin.unarchive:
+    src: "/opt/pmix/src/pmix-{{ pmix_version }}.tar.bz2"
+    dest: "/opt/pmix/src"
+    remote_src: true
+
+- name: "Configure pmix-{{ pmix_version }}"
+  ansible.builtin.command: 
+    chdir: "/opt/pmix/src/pmix-{{ pmix_version }}"
+    cmd: "./configure --prefix=/opt/pmix"
+
+- name: "Install pmix-{{ pmix_version }}"
+  ansible.builtin.command: 
+    chdir: "/opt/pmix/src/pmix-{{ pmix_version }}"
+    cmd: "make -j install"

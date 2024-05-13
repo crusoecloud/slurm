@@ -1,0 +1,2 @@
+slurm_user: root
+slurm_group: "{{ slurm_user }}"

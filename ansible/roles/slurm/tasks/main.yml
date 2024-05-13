@@ -1,0 +1,43 @@
+- name: Install build dependencies
+  ansible.builtin.apt:
+    name: 
+      - bzip2
+      - gcc
+      - make
+      - libdbus-1-dev
+
+- name: "Install pmix"
+  ansible.builtin.import_role:
+    name: pmix
+
+- name: "Create /opt/slurm/src directory"
+  file:
+    path: /opt/slurm/src
+    state: directory
+
+- name: "Download slurm-{{ slurm_version }}"
+  ansible.builtin.get_url:
+    url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
+    dest: "/opt/slurm/src/slurm-{{ slurm_version }}.tar.bz2"
+    checksum: "{{ slurm_checksum }}"
+
+- name: "Unarchive slurm-{{ slurm_version }}"
+  ansible.builtin.unarchive:
+    src: "/opt/slurm/src/slurm-{{ slurm_version }}.tar.bz2"
+    dest: "/opt/slurm/src"
+    remote_src: true
+
+- name: "Configure slurm-{{ slurm_version }}"
+  ansible.builtin.command: 
+    chdir: "/opt/slurm/src/slurm-{{ slurm_version }}"
+    cmd: >
+      ./configure 
+      --with-pmix=/opt/pmix
+      --with-systemdsystemunitdir=/opt/slurm/etc
+      --prefix=/opt/slurm
+      --sysconfdir=/etc/slurm
+
+- name: "Install slurm-{{ slurm_version }}"
+  ansible.builtin.command: 
+    chdir: "/opt/slurm/src/slurm-{{ slurm_version }}"
+    cmd: "make -j install"

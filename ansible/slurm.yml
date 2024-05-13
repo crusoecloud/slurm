@@ -2,21 +2,27 @@
   remote_user: ubuntu
   become: yes
   roles:
-    - categorize
+    - name: categorize
+      tags: always
     - munge
+
+- hosts: slurm_nfs_nodes
+  remote_user: ubuntu
+  become: yes
+  roles:
+    # Build pmix, slurm, and pyxis from source on the nfs node and export
+    # them as an nfs share to the rest of the cluster.
+    - pmix
+    - slurm
+    - pyxis
+    - nfs_server
+    - slurm_nfs_node
 
 - hosts: slurm_head_nodes
   remote_user: ubuntu
   become: yes
   roles:
     - slurm_head_node
-
-- hosts: slurm_nfs_nodes
-  remote_user: ubuntu
-  become: yes
-  roles:
-    - nfs_server
-    - slurm_nfs_node
 
 - hosts: slurm_compute_nodes
   remote_user: ubuntu

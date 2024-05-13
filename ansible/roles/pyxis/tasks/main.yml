@@ -1,37 +1,18 @@
 - name: Install dependencies
   ansible.builtin.apt:
     name:
-      - libslurm-dev
       - make
       - gcc
     state: latest
     update_cache: yes
 
-- name: Create pyxis source dir
-  ansible.builtin.file:
-    path: /usr/local/src/pyxis
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
-
 - name: Copy pyxis source
   ansible.builtin.unarchive:
     src: "{{ slurm_pyxis_tarball_url }}"
     remote_src: yes
-    dest: /usr/local/src/pyxis
-    extra_opts:
-      - --strip-components=1
+    dest: /opt/slurm/src
 
 - name: Install pyxis
   ansible.builtin.shell:
-    chdir: /usr/local/src/pyxis
-    cmd: make install
-
-- name: Link pyxis config
-  ansible.builtin.file:
-    src: /usr/local/share/pyxis/pyxis.conf
-    dest: /etc/slurm/plugstack.conf.d/pyxis.conf
-    owner: root
-    group: root
-    state: link
+    chdir: "/opt/slurm/src/pyxis-{{ slurm_pyxis_version }}"
+    cmd: C_INCLUDE_PATH=/opt/slurm/include/ make install prefix=/opt/slurm

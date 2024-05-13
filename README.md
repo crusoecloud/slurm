@@ -52,7 +52,7 @@ The remote scratch size on common nfs node instance types are:
 * `s1a.40x`: 25.6 TiB
 * `c1a.176x`: None
 
-### Shared.
+### Shared
 The `slurm-nfs-node-0` node exports a persistent `/home` directory that is mounted by
 all login nodes and all compute nodes. This offers up to `10 TiB` of persistent shared
 storage.
@@ -64,6 +64,28 @@ to 10 TiB. Note that `10 TiB` is the maximum currently supported by Crusoe Cloud
 ## Enroot and Pyxis
 This solution provides support for [NVIDIA Enroot](https://github.com/nvidia/enroot)
 and [Pyxis](https://github.com/NVIDIA/pyxis).
+```
+srun --container-image=<image> <cmd>
+```
+
+## MPI ( Experimental )
+This solution includes PMIx support for running Open MPI applications.
+```
+srun --mpi=pmix <cmd>
+```
+
+Note that it may be necessary to rebuild HPCx to link against the same version of PMIx that
+SLURM was build with.
+```
+./hpcx_rebuild.sh --ompi-extra-config "--with-pmix=/opt/pmix --with-hwloc=/usr --with-libevent=/usr"
+```
+
+Once hpcx is rebuilt with PMIx support, the correct version of HPCx must be loaded before running
+MPI jobs.
+```
+source /opt/hpcx/hpcx_rebuild.sh
+hpcx_load
+```
 
 ## How do I handle a head node outage?
 This solution utilizes a secondary head-node that will take over within 10

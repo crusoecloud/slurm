@@ -1,23 +1,77 @@
-- name: Install slurm
+- name: Install dependencies
   ansible.builtin.apt:
-    name:
-      - slurmctld
-      - slurm-client
-    state: latest
-    update_cache: yes
-- name: Install slurm.conf
-  ansible.builtin.template:
-    src: slurm.conf
-    dest: /etc/slurm/slurm.conf
-- name: Install gres.conf
-  ansible.builtin.template:
-    src: gres.conf
-    dest: /etc/slurm/gres.conf
+    name: nfs-common
+
+- name: Mount /opt/slurm
+  ansible.posix.mount:
+    src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/opt/slurm"
+    path: /opt/slurm
+    opts: ro,sync,soft
+    state: mounted
+    fstype: nfs
+
+- name: Install 99-slurm.sh
+  ansible.builtin.copy:
+    src: 99-slurm.sh
+    dest: /etc/profile.d/99-slurm.sh
     owner: root
     group: root
     mode: '0755'
+
+- name: Install dependencies
+  ansible.builtin.apt:
+    name: 
+      - libevent-dev
+      - libhwloc-dev
+
+- name: Mount /opt/pmix
+  ansible.posix.mount:
+    src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/opt/pmix"
+    path: /opt/pmix
+    opts: ro,sync,soft
+    state: mounted
+    fstype: nfs
+
+- name: Install slurmctld.service
+  ansible.builtin.copy:
+    src: /opt/slurm/etc/slurmctld.service
+    dest: /etc/systemd/system/slurmctld.service
+    owner: root
+    group: root
+    mode: '0644'
+    remote_src: true
+
+- name: Create slurmctld.service.d directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/slurmctld.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Install override.conf
+  ansible.builtin.template:
+    src: override.conf
+    dest: /etc/systemd/system/slurmctld.service.d/override.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create /var/spool/slurmctld directory
+  ansible.builtin.file:
+    path: /var/spool/slurmctld
+    state: directory
+    owner: "{{ slurm_user }}"
+    group: "{{ slurm_group }}"
+    mode: '0755'
+
+- name: Install slurm conf
+  ansible.builtin.import_role:
+    name: slurm_conf
+
 - name: Restart slurmctld
   ansible.builtin.systemd_service:
     name: slurmctld
     state: restarted
     enabled: true
+    daemon_reload: true

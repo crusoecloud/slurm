@@ -1,0 +1,31 @@
+- name: Create /etc/slurm directory
+  ansible.builtin.file:
+    path: /etc/slurm
+    state: directory
+    owner: "{{ slurm_user }}"
+    group: "{{ slurm_group }}"
+    mode: '0755'
+
+- name: Install slurm.conf
+  ansible.builtin.template:
+    src: slurm.conf
+    dest: /etc/slurm/slurm.conf
+    owner: "{{ slurm_user }}"
+    group: "{{ slurm_group }}"
+    mode: '0644'
+
+- name: Install plugstack.conf
+  ansible.builtin.copy:
+    src: plugstack.conf
+    dest: /etc/slurm/plugstack.conf
+    owner: "{{ slurm_user }}"
+    group: "{{ slurm_group }}"
+    mode: '0644'
+
+- name: Install gres.conf
+  ansible.builtin.template:
+    src: gres.conf
+    dest: /etc/slurm/gres.conf
+    owner: "{{ slurm_user }}"
+    group: "{{ slurm_group }}"
+    mode: '0644'
