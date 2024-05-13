@@ -1,3 +1,7 @@
+- name: Configure autofs
+  ansible.builtin.import_role:
+    name: autofs
+
 - name: Mount /scratch/shared
   ansible.posix.mount:
     src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/scratch/shared"

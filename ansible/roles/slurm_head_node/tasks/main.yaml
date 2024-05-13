@@ -1,3 +1,7 @@
+- name: Configure autofs
+  ansible.builtin.import_role:
+    name: autofs
+  
 - name: Install dependencies
   ansible.builtin.apt:
     name: nfs-common
