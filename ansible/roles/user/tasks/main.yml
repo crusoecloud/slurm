@@ -1,0 +1,21 @@
+- name: "Add group {{ user_name }}"
+  ansible.builtin.group:
+    name: "{{ user_name }}"
+    gid: "{{ user_gid }}"
+    state: present
+
+- name: "Add user {{ user_name }}"
+  ansible.builtin.user:
+    name: "{{ user_name }}"
+    group: "{{ user_name }}"
+    uid: "{{ user_uid }}"
+    home: "/home/{{ user_name }}"
+    shell: "/bin/bash"
+    create_home: "{{ 'slurm_nfs_nodes' in group_names }}"
+    state: present
+
+- name: "Add authorized key for {{ user_name }}"
+  ansible.builtin.authorized_key:
+    user: "{{ user_name }}"
+    key: "{{ user_ssh_pubkey }}"
+  when: "{{ 'slurm_nfs_nodes' in group_names }}"

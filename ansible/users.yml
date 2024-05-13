@@ -1,0 +1,19 @@
+- hosts: slurm_nfs_nodes
+  remote_user: ubuntu
+  become: yes
+  roles:
+    - name: user
+      vars:
+        user_name: tbarrett
+        user_uid: 1001
+        user_ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIjPRr0iVR4mgzJy0ehnM5hWX4O86hM1bVTgdi5g3nkZ tbarrett@crusoeenergy.com"
+
+- hosts: slurm_login_nodes,slurm_compute_nodes
+  remote_user: ubuntu
+  become: yes
+  roles:
+    - name: user
+      vars:
+        user_name: tbarrett
+        user_uid: 1001
+        user_ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIjPRr0iVR4mgzJy0ehnM5hWX4O86hM1bVTgdi5g3nkZ tbarrett@crusoeenergy.com"
