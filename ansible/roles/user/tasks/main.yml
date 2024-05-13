@@ -18,4 +18,4 @@
   ansible.builtin.authorized_key:
     user: "{{ user_name }}"
     key: "{{ user_ssh_pubkey }}"
-  when: "{{ 'slurm_nfs_nodes' in group_names }}"
+  when: "'slurm_nfs_nodes' in group_names"
