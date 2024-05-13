@@ -57,13 +57,13 @@
     group: root
     mode: '0644'
 
-- name: Create /var/spool/slurmctld directory
-  ansible.builtin.file:
+- name: Mount /var/spool/slurmctld
+  ansible.posix.mount:
+    src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/var/spool/slurmctld"
     path: /var/spool/slurmctld
-    state: directory
-    owner: "{{ slurm_user }}"
-    group: "{{ slurm_group }}"
-    mode: '0755'
+    opts: rw,sync,soft
+    state: mounted
+    fstype: nfs
 
 - name: Install slurm conf
   ansible.builtin.import_role:

@@ -1,6 +1,7 @@
 /home *(rw,sync,no_root_squash,no_subtree_check)
 /opt/pmix *(ro,sync,no_root_squash,no_subtree_check)
 /opt/slurm *(ro,sync,no_root_squash,no_subtree_check)
+/var/spool/slurmctld *(rw,sync,no_root_squash,no_subtree_check)
 {% if (disk_count | int) > 0 %}
 /scratch/shared *(rw,sync,no_root_squash,no_subtree_check)
 {% endif %}
