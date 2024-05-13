@@ -22,6 +22,7 @@
   remote_user: ubuntu
   become: yes
   roles:
+    - nfs_client
     - slurm_head_node
 
 - hosts: slurm_compute_nodes
