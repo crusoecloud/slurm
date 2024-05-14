@@ -63,8 +63,8 @@ to 10 TiB. Note that `10 TiB` is the maximum currently supported by Crusoe Cloud
 
 ## User Management
 To add additional users to your cluster, configure the `slurm_users` variable in your
-`terraform.tfvars` file and run `terraform apply`. The following example adds
-3 additional users `user1`, `user2`, and `user3` to the slurm cluster.
+`terraform.tfvars` file and run `terraform apply`. The following example adds three
+additional users `user1`, `user2`, and `user3` to the slurm cluster.
 ```
 # slurm users configuration
 slurm_users = [{
