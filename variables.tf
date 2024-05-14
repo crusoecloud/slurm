@@ -52,3 +52,13 @@ variable "slurm_compute_node_ib_network_id" {
   type        = string
   default     = null
 }
+
+variable "slurm_users" {
+  description = "Additional users"
+  type = list(object({
+    name = string
+    uid = number
+    ssh_pubkey = string
+  }))
+  default     = []
+}

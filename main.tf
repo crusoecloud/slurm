@@ -82,6 +82,7 @@ resource "local_file" "ansible_inventory" {
       slurm_login_nodes = crusoe_compute_instance.slurm_login_node.*,
       slurm_nfs_nodes = crusoe_compute_instance.slurm_nfs_node.*,
       slurm_compute_nodes = crusoe_compute_instance.slurm_compute_node.*
+      slurm_users = var.slurm_users
     }
   )
   filename = "ansible/inventory/hosts"

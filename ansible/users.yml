@@ -1,9 +1,13 @@
 - hosts: all
   remote_user: ubuntu
   become: yes
-  roles:
-    - name: user
-      vars:
-        user_name: tbarrett2
-        user_uid: 1002
-        user_ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIjPRr0iVR4mgzJy0ehnM5hWX4O86hM1bVTgdi5g3nkZ tbarrett@crusoeenergy.com"
+  tasks:
+  - name: "Add users"
+    ansible.builtin.include_role:
+      name: user
+    vars:
+      user_name: "{{ item.name }}"
+      user_uid: "{{ item.uid }}"
+      user_ssh_pubkey: "{{ item.ssh_pubkey }}"
+    loop: "{{ slurm_users }}"
+    when: slurm_users is defined

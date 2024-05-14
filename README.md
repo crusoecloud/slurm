@@ -61,6 +61,27 @@ The `slurm_nfs_home_size` variable can optionally be set in the `terraform.tfvar
 to configure the size of the `/home` nfs share. If left unconfigured, this will default
 to 10 TiB. Note that `10 TiB` is the maximum currently supported by Crusoe Cloud.
 
+## User Management
+To add additional users to your cluster, configure the `slurm_users` variable in your
+`terraform.tfvars` file and run `terraform apply`. The following example adds
+3 additional users `user1`, `user2`, and `user3` to the slurm cluster.
+```
+# slurm users configuration
+slurm_users = [{
+  name = "user1"
+  uid = 1001
+  ssh_pubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIjPRr0iVR4mgzJy0ehnM5hWX4O86hM1bVTgdi5g3nkZ user1@crusoe.ai"
+}, {
+  name = "user2"
+  uid = 1002
+  ssh_pubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIjPRr0iVR4mgzJy0ehnM5hWX4O86hM1bVTgdi5g3nkZ user2@crusoe.ai"
+}, {
+  name = "user3"
+  uid = 1003
+  ssh_pubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIjPRr0iVR4mgzJy0ehnM5hWX4O86hM1bVTgdi5g3nkZ user3@crusoe.ai"
+}]
+```
+
 ## Enroot and Pyxis
 This solution provides support for [NVIDIA Enroot](https://github.com/nvidia/enroot)
 and [Pyxis](https://github.com/NVIDIA/pyxis).
