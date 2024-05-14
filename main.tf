@@ -3,6 +3,10 @@ terraform {
     crusoe = {
       source  = "registry.terraform.io/crusoecloud/crusoe"
     }
+    ansible = {
+      version = "~> 1.3.0"
+      source  = "ansible/ansible"
+    }
   }
 }
 
@@ -75,17 +79,63 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
   }]: null
 }
 
-resource "local_file" "ansible_inventory" {
-  content = templatefile("inventory.tmpl",
-    {
-      slurm_head_nodes = crusoe_compute_instance.slurm_head_node.*,
-      slurm_login_nodes = crusoe_compute_instance.slurm_login_node.*,
-      slurm_nfs_nodes = crusoe_compute_instance.slurm_nfs_node.*,
-      slurm_compute_nodes = crusoe_compute_instance.slurm_compute_node.*
-      slurm_users = var.slurm_users
-    }
-  )
-  filename = "ansible/inventory/hosts"
+resource "ansible_host" "slurm_nfs_node_host" {
+  for_each = {
+    for n in crusoe_compute_instance.slurm_nfs_node : n.name => n
+  }
+
+  name      = each.value.name
+  groups    = [ "slurm_nfs_nodes" ]
+  variables = {
+    ansible_host = each.value.network_interfaces[0].public_ipv4.address
+    instance_type = each.value.type
+  }
+}
+
+resource "ansible_host" "slurm_head_node_host" {
+  for_each = {
+    for n in crusoe_compute_instance.slurm_head_node : n.name => n
+  }
+
+  name      = each.value.name
+  groups    = [ "slurm_head_nodes" ]
+  variables = {
+    ansible_host = each.value.network_interfaces[0].public_ipv4.address
+    instance_type = each.value.type
+  }
+}
+
+resource "ansible_host" "slurm_login_node_host" {
+  for_each = {
+    for n in crusoe_compute_instance.slurm_login_node : n.name => n
+  }
+
+  name      = each.value.name
+  groups    = [ "slurm_login_nodes" ]
+  variables = {
+    ansible_host = each.value.network_interfaces[0].public_ipv4.address
+    instance_type = each.value.type
+  }
+}
+
+resource "ansible_host" "slurm_compute_node_host" {
+  for_each = {
+    for n in crusoe_compute_instance.slurm_compute_node : n.name => n
+  }
+
+  name      = each.value.name
+  groups    = [ "slurm_compute_nodes" ]
+  variables = {
+    ansible_host = each.value.network_interfaces[0].public_ipv4.address
+    instance_type = each.value.type
+  }
+}
+
+resource "ansible_group" "all" {
+  name     = "all"
+  variables = {
+    slurm_users = jsonencode(var.slurm_users)
+  }
 }
 
 resource "null_resource" "ansible_playbook" {
@@ -99,8 +149,14 @@ resource "null_resource" "ansible_playbook" {
   }
 
   provisioner "local-exec" {
-    command = "ansible-playbook -i ansible/inventory/hosts ansible/slurm.yml -f 128"
+    command = "ansible-playbook -i ansible/inventory/inventory.yml ansible/slurm.yml -f 128"
   }
 
-  depends_on = [local_file.ansible_inventory]
+  depends_on = [
+    ansible_host.slurm_nfs_node_host,
+    ansible_host.slurm_head_node_host,
+    ansible_host.slurm_login_node_host,
+    ansible_host.slurm_compute_node_host,
+    ansible_group.all
+  ]
 }
