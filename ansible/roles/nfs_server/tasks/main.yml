@@ -57,6 +57,15 @@
     group: root
     mode: '0644'
 
+- name: Copy /etc/nfs.conf
+  tags: nfs_server
+  ansible.builtin.template:
+    src: nfs.conf
+    dest: /etc/nfs.conf
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Restart nfs-server service
   tags: nfs_server
   ansible.builtin.systemd_service:

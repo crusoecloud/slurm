@@ -1,4 +1,4 @@
-/home *(rw,sync,no_root_squash,no_subtree_check)
+/home *(rw,async,no_root_squash,no_subtree_check)
 /opt/pmix *(ro,sync,no_root_squash,no_subtree_check)
 /opt/slurm *(ro,sync,no_root_squash,no_subtree_check)
 /var/spool/slurmctld *(rw,sync,no_root_squash,no_subtree_check)
