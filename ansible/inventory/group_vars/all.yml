@@ -6,5 +6,3 @@ instance_class: "{{ instance_type.split('.')[0] }}"
 instance_size: "{{ instance_type.split('.')[1][:-1] }}"
 
 disk_count: 0
-
-munge_key: "01234567012345670123456701234567"
