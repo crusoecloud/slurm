@@ -41,3 +41,11 @@
   ansible.builtin.command: 
     chdir: "/opt/slurm/src/slurm-{{ slurm_version }}"
     cmd: "make -j install"
+
+- name: Install 99-slurm.sh
+  ansible.builtin.copy:
+    src: 99-slurm.sh
+    dest: /etc/profile.d/99-slurm.sh
+    owner: root
+    group: root
+    mode: '0755'
