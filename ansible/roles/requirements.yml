@@ -1,7 +1,3 @@
-roles:
-- src: nvidia.enroot
-  version: "v0.5.0"
-
 collections:
   - name: cloud.terraform
     version: "2.0.0"

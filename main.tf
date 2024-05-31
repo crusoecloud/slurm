@@ -21,7 +21,7 @@ resource "crusoe_compute_instance" "slurm_head_node" {
   ssh_key    = local.ssh_public_key
   location   = var.location
   project_id = var.project_id
-  image      = "ubuntu22.04:latest"
+  image    = "ubuntu22.04-nvidia-slurm:latest"
 }
 
 resource "crusoe_compute_instance" "slurm_login_node" {
@@ -31,7 +31,7 @@ resource "crusoe_compute_instance" "slurm_login_node" {
   ssh_key    = local.ssh_public_key
   location   = var.location
   project_id = var.project_id
-  image      = "ubuntu22.04:latest"
+  image    = "ubuntu22.04-nvidia-slurm:latest"
 }
 
 resource "crusoe_storage_disk" "slurm_nfs_home" {
@@ -73,7 +73,7 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
   ssh_key  = local.ssh_public_key
   location = var.location
   project_id = var.project_id
-  image    = "ubuntu22.04-nvidia-sxm-docker:latest"
+  image    = "ubuntu22.04-nvidia-slurm:latest"
   host_channel_adapters = var.slurm_compute_node_ib_network_id != null ? [{
     ib_partition_id = crusoe_ib_partition.slurm_ib_partition[0].id
   }]: null

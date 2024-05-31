@@ -10,11 +10,6 @@
   remote_user: ubuntu
   become: yes
   roles:
-    # Build pmix, slurm, and pyxis from source on the nfs node and export
-    # them as an nfs share to the rest of the cluster.
-    - pmix
-    - slurm
-    - pyxis
     - nfs_server
     - slurm_nfs_node
 

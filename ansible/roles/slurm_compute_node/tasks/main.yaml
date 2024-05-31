@@ -22,53 +22,6 @@
     fstype: nfs
   when: "{{ (hostvars['slurm-nfs-node-0'].disk_count | int) > 0 }}"
 
-- name: Mount /opt/slurm
-  ansible.posix.mount:
-    src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/opt/slurm"
-    path: /opt/slurm
-    opts: ro,sync,soft
-    state: mounted
-    fstype: nfs
-
-- name: Install 99-slurm.sh
-  ansible.builtin.copy:
-    src: 99-slurm.sh
-    dest: /etc/profile.d/99-slurm.sh
-    owner: root
-    group: root
-    mode: '0755'
-
-- name: Install dependencies
-  ansible.builtin.apt:
-    name: 
-      - libevent-dev
-      - libhwloc-dev
-
-- name: Mount /opt/pmix
-  ansible.posix.mount:
-    src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/opt/pmix"
-    path: /opt/pmix
-    opts: ro,sync,soft
-    state: mounted
-    fstype: nfs
-
-- name: Install slurmd.service
-  ansible.builtin.copy:
-    src: /opt/slurm/etc/slurmd.service
-    dest: /etc/systemd/system/slurmd.service
-    owner: root
-    group: root
-    mode: '0644'
-    remote_src: true
-
-- name: Create slurmd.service.d directory
-  ansible.builtin.file:
-    path: /etc/systemd/system/slurmd.service.d
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-
 - name: Install override.conf
   ansible.builtin.template:
     src: override.conf
@@ -76,53 +29,6 @@
     owner: root
     group: root
     mode: '0755'
-
-- name: Create /etc/slurm directory
-  ansible.builtin.file:
-    path: /etc/slurm
-    state: directory
-    owner: "{{ slurm_user }}"
-    group: "{{ slurm_group }}"
-    mode: '0755'
-
-- name: Copy prolog.sh
-  ansible.builtin.copy:
-    src: prolog.sh
-    dest: /etc/slurm/prolog.sh
-    owner: "{{ slurm_user }}"
-    group: "{{ slurm_group }}"
-    mode: '0755'
-
-- name: Copy epilog.sh
-  ansible.builtin.copy:
-    src: epilog.sh
-    dest: /etc/slurm/epilog.sh
-    owner: "{{ slurm_user }}"
-    group: "{{ slurm_group }}"
-    mode: '0755'
-
-- name: Install enroot
-  tags: enroot
-  ansible.builtin.import_role:
-    name: nvidia.enroot
-  vars:
-    enroot_version: "3.4.1"
-  
-- name: Create plugstack.conf.d directory
-  ansible.builtin.file:
-    path: /etc/slurm/plugstack.conf.d
-    state: directory
-    owner: "{{ slurm_user }}"
-    group: "{{ slurm_group }}"
-    mode: '0755'
-
-- name: Link pyxis config
-  ansible.builtin.file:
-    src: /opt/slurm/share/pyxis/pyxis.conf
-    dest: /etc/slurm/plugstack.conf.d/pyxis.conf
-    owner: root
-    group: root
-    state: link
 
 - name: Restart slurmd
   ansible.builtin.systemd_service:
