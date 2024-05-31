@@ -13,6 +13,11 @@ variable "project_id" {
   type        = string
 }
 
+variable "vpc_subnet_id" {
+  description = "The vpc subnet id."
+  type        = string
+}
+
 variable "slurm_head_node_count" {
   description = "The number of slurm head nodes."
   type        = number

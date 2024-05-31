@@ -22,6 +22,12 @@ resource "crusoe_compute_instance" "slurm_head_node" {
   location   = var.location
   project_id = var.project_id
   image    = "ubuntu22.04-nvidia-slurm:latest"
+  network_interfaces = [{
+    subnet = var.vpc_subnet_id,
+    public_ipv4 = {
+      type = "static"
+    }
+  }]
 }
 
 resource "crusoe_compute_instance" "slurm_login_node" {
@@ -32,6 +38,12 @@ resource "crusoe_compute_instance" "slurm_login_node" {
   location   = var.location
   project_id = var.project_id
   image    = "ubuntu22.04-nvidia-slurm:latest"
+  network_interfaces = [{
+    subnet = var.vpc_subnet_id,
+    public_ipv4 = {
+      type = "static"
+    }
+  }]
 }
 
 resource "crusoe_storage_disk" "slurm_nfs_home" {
@@ -53,6 +65,12 @@ resource "crusoe_compute_instance" "slurm_nfs_node" {
       id = crusoe_storage_disk.slurm_nfs_home.id
       mode = "read-write"
       attachment_type = "data"
+  }]
+  network_interfaces = [{
+    subnet = var.vpc_subnet_id,
+    public_ipv4 = {
+      type = "static"
+    }
   }]
 }
 
@@ -77,6 +95,12 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
   host_channel_adapters = var.slurm_compute_node_ib_network_id != null ? [{
     ib_partition_id = crusoe_ib_partition.slurm_ib_partition[0].id
   }]: null
+  network_interfaces = [{
+    subnet = var.vpc_subnet_id,
+    public_ipv4 = {
+      type = "static"
+    }
+  }]
 }
 
 resource "ansible_host" "slurm_nfs_node_host" {
