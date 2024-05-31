@@ -4,7 +4,7 @@
 
 - name: Mount /scratch/shared
   ansible.posix.mount:
-    src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/scratch/shared"
+    src: "slurm-nfs-node-0:/scratch/shared"
     path: /scratch/shared
     opts: rw,sync,soft
     state: mounted

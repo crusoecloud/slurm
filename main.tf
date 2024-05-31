@@ -89,6 +89,7 @@ resource "ansible_host" "slurm_nfs_node_host" {
   variables = {
     ansible_host = each.value.network_interfaces[0].public_ipv4.address
     instance_type = each.value.type
+    location = each.value.location
   }
 }
 
@@ -102,6 +103,7 @@ resource "ansible_host" "slurm_head_node_host" {
   variables = {
     ansible_host = each.value.network_interfaces[0].public_ipv4.address
     instance_type = each.value.type
+    location = each.value.location
   }
 }
 
@@ -115,6 +117,7 @@ resource "ansible_host" "slurm_login_node_host" {
   variables = {
     ansible_host = each.value.network_interfaces[0].public_ipv4.address
     instance_type = each.value.type
+    location = each.value.location
   }
 }
 
@@ -128,6 +131,7 @@ resource "ansible_host" "slurm_compute_node_host" {
   variables = {
     ansible_host = each.value.network_interfaces[0].public_ipv4.address
     instance_type = each.value.type
+    location = each.value.location
   }
 }
 

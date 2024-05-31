@@ -4,6 +4,7 @@
   roles:
     - name: categorize
       tags: always
+    - hostname
     - munge
 
 - hosts: slurm_nfs_nodes

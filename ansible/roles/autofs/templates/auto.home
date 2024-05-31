@@ -1,1 +1,1 @@
-* -soft,rsize=262144,wsize=262144 {{hostvars['slurm-nfs-node-0'].ansible_fqdn}}:/home/&
+* -soft,rsize=262144,wsize=262144 slurm-nfs-node-0:/home/&

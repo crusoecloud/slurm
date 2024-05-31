@@ -1,0 +1,15 @@
+- name: Install 01-search.yaml
+  ansible.builtin.template:
+    src: 01-search.yaml
+    dest: /etc/netplan/01-search.yaml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Apply netplan configurations
+  ansible.builtin.shell:
+    cmd: netplan apply
+
+- name: Configure the hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"

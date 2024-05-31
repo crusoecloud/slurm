@@ -16,7 +16,7 @@
 
 - name: Mount /var/spool/slurmctld
   ansible.posix.mount:
-    src: "{{ hostvars['slurm-nfs-node-0'].ansible_fqdn }}:/var/spool/slurmctld"
+    src: "slurm-nfs-node-0:/var/spool/slurmctld"
     path: /var/spool/slurmctld
     opts: rw,sync,soft
     state: mounted

@@ -1,0 +1,8 @@
+network:
+  version: 2
+  ethernets:
+    alleths:
+      match:
+        name: en*
+      nameservers:
+        search: ["{{ location }}.compute.internal"]
