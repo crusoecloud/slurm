@@ -1,3 +1,11 @@
+- name: Update mdadm.conf
+  ansible.builtin.lineinfile:
+    path: /etc/mdadm/mdadm.conf
+    state: present
+    regexp: '^HOSTNAME'
+    line: 'HOSTNAME <ignore>'
+  notify: Update initramfs
+
 - name: Copy raid0.sh
   ansible.builtin.copy:
     src: raid0.sh

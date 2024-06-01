@@ -9,3 +9,7 @@
   file:
     path: /var/spool/slurmctld
     state: directory
+
+- name: Start nfs server
+  ansible.builtin.import_role:
+    name: nfs_server

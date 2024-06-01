@@ -1,9 +1,9 @@
 #!/bin/bash
 N=$1
 
-if [ ! -b /dev/disk/by-id/md-name-ephemeral ]; then
+if [ ! -b /dev/md/ephemeral ]; then
     echo "info: creating md dev"
-    mdadm --create /dev/md127 --force --name=ephemeral --level=0 --raid-devices=$N /dev/nvme[0-$(($N - 1))]n1
+    mdadm --create /dev/md/ephemeral --force --name=ephemeral --level=0 --raid-devices=$N /dev/nvme[0-$(($N - 1))]n1
     if [ $? -ne 0 ]; then
         echo "error: failed to create md dev"
         exit 1
@@ -14,11 +14,11 @@ fi
 
 udevadm settle
 
-blkid -p -u filesystem /dev/disk/by-id/md-name-ephemeral >> /dev/null
+blkid -p -u filesystem /dev/md/ephemeral >> /dev/null
 res=$?
 if [ $res -eq 2 ]; then
     echo "info: creating ext4 fs on md dev"
-    mkfs.ext4 /dev/disk/by-id/md-name-ephemeral
+    mkfs.ext4 /dev/md/ephemeral
     if [ $? -ne 0 ]; then
         echo "error: failed to create ext4 fs on md dev"
         exit 1
