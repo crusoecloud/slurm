@@ -23,7 +23,7 @@
     mode: '0644'
 
 - name: Install gres.conf
-  ansible.builtin.template:
+  ansible.builtin.copy:
     src: gres.conf
     dest: /etc/slurm/gres.conf
     owner: "{{ slurm_user }}"
