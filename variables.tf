@@ -16,6 +16,7 @@ variable "project_id" {
 variable "vpc_subnet_id" {
   description = "The vpc subnet id."
   type        = string
+  default     = null
 }
 
 variable "slurm_head_node_count" {

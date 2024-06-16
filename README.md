@@ -89,23 +89,22 @@ and [Pyxis](https://github.com/NVIDIA/pyxis).
 srun --container-image=<image> <cmd>
 ```
 
-## MPI ( Experimental )
+## MPI
 This solution includes PMIx support for running Open MPI applications.
 ```
 srun --mpi=pmix <cmd>
 ```
 
-Note that it may be necessary to rebuild HPCx to link against the same version of PMIx that
-SLURM was build with.
+For example, this can be used to run the nccl-tests included in the `ubuntu22.04-nvidia-slurm` image.
 ```
-./hpcx_rebuild.sh --ompi-extra-config "--with-pmix=/opt/pmix --with-hwloc=/usr --with-libevent=/usr"
-```
+# Run 2-node NCCL AllReduce Benchmark using RDMA Transport.
+export NCCL_IB_HCA=^mlx5_0:1
+srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --mpi=pmix /opt/nccl-tests/build/all_reduce_perf -b 1M -e 1G -f 2 -g 1
 
-Once hpcx is rebuilt with PMIx support, the correct version of HPCx must be loaded before running
-MPI jobs.
-```
-source /opt/hpcx/hpcx_rebuild.sh
-hpcx_load
+# Run 2-node NCCL AllReduce Benchmark using Ethernet Transport.
+export NCCL_IB_DISABLE=1
+export NCCL_IBEXT_DISABLE=1
+srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --mpi=pmix /opt/nccl-tests/build/all_reduce_perf -b 1M -e 1G -f 2 -g 1
 ```
 
 ## How do I handle a head node outage?
