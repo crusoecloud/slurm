@@ -138,11 +138,8 @@ batch*       up   infinite      1  down* slurm-compute-node-0
 batch*       up   infinite      7   idle slurm-compute-node-[1-7]
 ```
 
-Once the compute node is back online, the following command can be used to return
-it to the cluster.
-```bash
-sudo scontrol update NodeName=slurm-compute-node-0 State=RESUME
-```
+Once the compute node is back online, it will automatically rejoin the
+cluster as long as it is healthy.
 
 Once the compute node has been returned to the cluster, it should enter an `IDLE` state.
 ```bash
