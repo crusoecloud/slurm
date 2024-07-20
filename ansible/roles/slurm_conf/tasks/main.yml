@@ -14,14 +14,6 @@
     group: "{{ slurm_group }}"
     mode: '0644'
 
-- name: Install plugstack.conf
-  ansible.builtin.copy:
-    src: plugstack.conf
-    dest: /etc/slurm/plugstack.conf
-    owner: "{{ slurm_user }}"
-    group: "{{ slurm_group }}"
-    mode: '0644'
-
 - name: Install gres.conf
   ansible.builtin.copy:
     src: gres.conf
