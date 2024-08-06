@@ -17,11 +17,14 @@ locals {
 resource "crusoe_compute_instance" "slurm_head_node" {
   count      = var.slurm_head_node_count
   name       = "slurm-head-node-${count.index}"
-  type       = "c1a.16x"
+  type       = var.slurm_head_node_type
   ssh_key    = local.ssh_public_key
   location   = var.location
   project_id = var.project_id
   image    = "ubuntu22.04-nvidia-slurm:latest"
+  host_channel_adapters = var.slurm_head_node_ib_partition_id != null ? [{
+    ib_partition_id = var.slurm_head_node_ib_partition_id
+  }]: null
   network_interfaces = [{
     subnet = var.vpc_subnet_id,
     public_ipv4 = {
@@ -33,11 +36,14 @@ resource "crusoe_compute_instance" "slurm_head_node" {
 resource "crusoe_compute_instance" "slurm_login_node" {
   count      = var.slurm_login_node_count
   name       = "slurm-login-node-${count.index}"
-  type       = "c1a.16x"
+  type       = var.slurm_login_node_type
   ssh_key    = local.ssh_public_key
   location   = var.location
   project_id = var.project_id
   image    = "ubuntu22.04-nvidia-slurm:latest"
+  host_channel_adapters = var.slurm_login_node_ib_partition_id != null ? [{
+    ib_partition_id = var.slurm_login_node_ib_partition_id
+  }]: null
   network_interfaces = [{
     subnet = var.vpc_subnet_id,
     public_ipv4 = {
@@ -66,22 +72,15 @@ resource "crusoe_compute_instance" "slurm_nfs_node" {
       mode = "read-write"
       attachment_type = "data"
   }]
+  host_channel_adapters = var.slurm_nfs_node_ib_partition_id != null ? [{
+    ib_partition_id = var.slurm_nfs_node_ib_partition_id
+  }]: null
   network_interfaces = [{
     subnet = var.vpc_subnet_id,
     public_ipv4 = {
       type = "static"
     }
   }]
-}
-
-# If an ib_network_id is defined, create an infiniband partition for the slurm
-# compute nodes. This is only necessary / possible on compute instance types
-# that support infiniband.
-resource "crusoe_ib_partition" "slurm_ib_partition" {
-  count = var.slurm_compute_node_ib_network_id != null ? 1: 0
-  ib_network_id = var.slurm_compute_node_ib_network_id
-  name     = "slurm-ib-partition"
-  project_id = var.project_id
 }
 
 resource "crusoe_compute_instance" "slurm_compute_node" {
@@ -92,8 +91,8 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
   location = var.location
   project_id = var.project_id
   image    = "ubuntu22.04-nvidia-slurm:latest"
-  host_channel_adapters = var.slurm_compute_node_ib_network_id != null ? [{
-    ib_partition_id = crusoe_ib_partition.slurm_ib_partition[0].id
+  host_channel_adapters = var.slurm_compute_node_ib_partition_id != null ? [{
+    ib_partition_id = var.slurm_compute_node_ib_partition_id
   }]: null
   network_interfaces = [{
     subnet = var.vpc_subnet_id,

@@ -25,10 +25,36 @@ variable "slurm_head_node_count" {
   default     = 2
 }
 
+variable "slurm_head_node_type" {
+  description = "The slurm head node instance type."
+  type        = string
+  default     = "c1a.16x"
+}
+
+# This is only required when using an infiniband enabled instance type for the head nodes.
+variable "slurm_head_node_ib_partition_id" {
+  description = "The ib partition in which to create the head node."
+  type        = string
+  default     = null
+}
+
 variable "slurm_login_node_count" {
   description = "The number of slurm login nodes."
   type        = number
   default     = 2
+}
+
+variable "slurm_login_node_type" {
+  description = "The slurm login node instance type."
+  type        = string
+  default     = "c1a.16x"
+}
+
+# This is only required when using an infiniband enabled instance type for the login nodes.
+variable "slurm_login_node_ib_partition_id" {
+  description = "The ib partition in which to create the login node."
+  type        = string
+  default     = null
 }
 
 variable "slurm_nfs_node_type" {
@@ -43,6 +69,13 @@ variable "slurm_nfs_home_size" {
   default     = "10240GiB"
 }
 
+# This is only required when using an infiniband enabled instance type for the nfs node.
+variable "slurm_nfs_node_ib_partition_id" {
+  description = "The ib partition in which to create the nfs node."
+  type        = string
+  default     = null
+}
+
 variable "slurm_compute_node_type" {
   description = "The slurm compute node instance type."
   type        = string
@@ -53,8 +86,9 @@ variable "slurm_compute_node_count" {
   type        = number
 }
 
-variable "slurm_compute_node_ib_network_id" {
-  description = "The ib network in which to create the cluster."
+# This is only required when using an infiniband enabled instance type for the compute nodes.
+variable "slurm_compute_node_ib_partition_id" {
+  description = "The ib partition in which to create the compute nodes."
   type        = string
   default     = null
 }
