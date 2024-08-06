@@ -22,6 +22,7 @@ resource "crusoe_compute_instance" "slurm_head_node" {
   location   = var.location
   project_id = var.project_id
   image    = "ubuntu22.04-nvidia-slurm:latest"
+  reservation_id = var.slurm_head_node_reservation_id
   host_channel_adapters = var.slurm_head_node_ib_partition_id != null ? [{
     ib_partition_id = var.slurm_head_node_ib_partition_id
   }]: null
@@ -41,6 +42,7 @@ resource "crusoe_compute_instance" "slurm_login_node" {
   location   = var.location
   project_id = var.project_id
   image    = "ubuntu22.04-nvidia-slurm:latest"
+  reservation_id = var.slurm_login_node_reservation_id
   host_channel_adapters = var.slurm_login_node_ib_partition_id != null ? [{
     ib_partition_id = var.slurm_login_node_ib_partition_id
   }]: null
@@ -72,6 +74,7 @@ resource "crusoe_compute_instance" "slurm_nfs_node" {
       mode = "read-write"
       attachment_type = "data"
   }]
+  reservation_id = var.slurm_nfs_node_reservation_id
   host_channel_adapters = var.slurm_nfs_node_ib_partition_id != null ? [{
     ib_partition_id = var.slurm_nfs_node_ib_partition_id
   }]: null
@@ -91,6 +94,7 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
   location = var.location
   project_id = var.project_id
   image    = "ubuntu22.04-nvidia-slurm:latest"
+  reservation_id = var.slurm_compute_node_reservation_id
   host_channel_adapters = var.slurm_compute_node_ib_partition_id != null ? [{
     ib_partition_id = var.slurm_compute_node_ib_partition_id
   }]: null

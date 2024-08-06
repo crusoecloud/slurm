@@ -38,6 +38,12 @@ variable "slurm_head_node_ib_partition_id" {
   default     = null
 }
 
+variable "slurm_head_node_reservation_id" {
+  description = "The slurm head node reservation id"
+  type        = string
+  default     = null
+}
+
 variable "slurm_login_node_count" {
   description = "The number of slurm login nodes."
   type        = number
@@ -48,6 +54,12 @@ variable "slurm_login_node_type" {
   description = "The slurm login node instance type."
   type        = string
   default     = "c1a.16x"
+}
+
+variable "slurm_login_node_reservation_id" {
+  description = "The slurm login node reservation id"
+  type        = string
+  default     = null
 }
 
 # This is only required when using an infiniband enabled instance type for the login nodes.
@@ -76,6 +88,12 @@ variable "slurm_nfs_node_ib_partition_id" {
   default     = null
 }
 
+variable "slurm_nfs_node_reservation_id" {
+  description = "The slurm nfs node reservation id"
+  type        = string
+  default     = null
+}
+
 variable "slurm_compute_node_type" {
   description = "The slurm compute node instance type."
   type        = string
@@ -89,6 +107,12 @@ variable "slurm_compute_node_count" {
 # This is only required when using an infiniband enabled instance type for the compute nodes.
 variable "slurm_compute_node_ib_partition_id" {
   description = "The ib partition in which to create the compute nodes."
+  type        = string
+  default     = null
+}
+
+variable "slurm_compute_node_reservation_id" {
+  description = "The slurm compute node reservation id"
   type        = string
   default     = null
 }
