@@ -2,10 +2,7 @@
   remote_user: ubuntu
   become: yes
   roles:
-    - name: categorize
-      tags: always
     - hostname
-    - munge
 
 - hosts: slurm_nfs_nodes
   remote_user: ubuntu

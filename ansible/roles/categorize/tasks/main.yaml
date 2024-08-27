@@ -1,6 +1,0 @@
-- name: Add compute_node to group
-  ansible.builtin.add_host:
-    name: '{{ item }}'
-    groups: '{{ hostvars[item].instance_class | regex_replace("-", "_") }}'
-  when: hostvars[item].instance_type is defined
-  loop: "{{ ansible_play_hosts }}"
