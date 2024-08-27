@@ -126,3 +126,27 @@ variable "slurm_users" {
   }))
   default     = []
 }
+
+variable "partitions" {
+  description = "Partition configuration"
+  type = list(object({
+    name = string
+    extra_args = map(string)
+  }))
+  default = [
+    {
+      name = "batch"
+      extra_args = {
+        "Default" = "YES",
+        "MaxTime" = "INFINITE",
+        "State" = "UP",
+      }
+    }, {
+      name = "login"
+      extra_args = {
+        "State":  "INACTIVE",
+				"Hidden": "YES",
+      }
+    }
+  ]
+}

@@ -22,12 +22,6 @@
   roles:
     - slurm_compute_node
 
-- hosts: slurm_login_nodes
-  remote_user: ubuntu
-  become: yes
-  roles:
-    - slurm_login_node
-
 - hosts: all
   remote_user: ubuntu
   become: yes

@@ -147,11 +147,12 @@ resource "ansible_host" "slurm_login_node_host" {
 
   name      = each.value.name
   groups    = [
-    "slurm_login_nodes",
+    "slurm_compute_nodes",
     replace(split(".", each.value.type)[0], "-", "_"),
   ]
   variables = {
     ansible_host = each.value.network_interfaces[0].public_ipv4.address
+    slurm_features = jsonencode([ "login" ])
     instance_type = each.value.type
     location = each.value.location
   }
@@ -169,6 +170,7 @@ resource "ansible_host" "slurm_compute_node_host" {
   ]
   variables = {
     ansible_host = each.value.network_interfaces[0].public_ipv4.address
+    slurm_features = jsonencode([ "batch" ])
     instance_type = each.value.type
     location = each.value.location
   }
@@ -178,6 +180,7 @@ resource "ansible_group" "all" {
   name     = "all"
   variables = {
     slurm_users = jsonencode(var.slurm_users)
+    partitions = jsonencode(var.partitions)
   }
 }
 

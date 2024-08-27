@@ -1,0 +1,5 @@
+- hosts: slurm_head_nodes
+  remote_user: ubuntu
+  become: yes
+  roles:
+    - slurm_conf
