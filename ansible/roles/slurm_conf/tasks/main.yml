@@ -21,3 +21,11 @@
     owner: "{{ slurm_user }}"
     group: "{{ slurm_group }}"
     mode: '0644'
+
+- name: Install cgroup.conf
+  ansible.builtin.copy:
+    src: cgroup.conf
+    dest: /etc/slurm/cgroup.conf
+    owner: "{{ slurm_user }}"
+    group: "{{ slurm_group }}"
+    mode: '0644'
