@@ -118,12 +118,12 @@ For example, this can be used to run the nccl-tests included in the `ubuntu22.04
 ```
 # Run 2-node NCCL AllReduce Benchmark using RDMA Transport.
 export NCCL_IB_HCA=^mlx5_0:1
-srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --mpi=pmix /opt/nccl-tests/build/all_reduce_perf -b 1M -e 1G -f 2 -g 1
+srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --cpus-per-task=22 --mpi=pmix /opt/nccl-tests/build/all_reduce_perf -b 1M -e 1G -f 2 -g 1
 
 # Run 2-node NCCL AllReduce Benchmark using Ethernet Transport.
 export NCCL_IB_DISABLE=1
 export NCCL_IBEXT_DISABLE=1
-srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --mpi=pmix /opt/nccl-tests/build/all_reduce_perf -b 1M -e 1G -f 2 -g 1
+srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --cpus-per-task=22 --mpi=pmix /opt/nccl-tests/build/all_reduce_perf -b 1M -e 1G -f 2 -g 1
 ```
 
 ## How do I handle a head node outage?
