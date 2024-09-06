@@ -52,6 +52,11 @@ resource "crusoe_compute_instance" "slurm_login_node" {
       type = "static"
     }
   }]
+  disks = [for v in var.slurm_shared_volumes: {
+    id = v.id
+    mode = v.mode
+    attachment_type = "data"
+  }]
 }
 
 resource "crusoe_storage_disk" "slurm_nfs_home" {
@@ -104,6 +109,11 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
       type = "static"
     }
   }]
+  disks = [for v in var.slurm_shared_volumes: {
+    id = v.id
+    mode = v.mode
+    attachment_type = "data"
+  }]
 }
 
 resource "ansible_host" "slurm_nfs_node_host" {
@@ -155,6 +165,7 @@ resource "ansible_host" "slurm_login_node_host" {
     slurm_features = jsonencode([ "login" ])
     instance_type = each.value.type
     location = each.value.location
+    volumes = jsonencode(var.slurm_shared_volumes)
   }
 }
 
@@ -173,6 +184,7 @@ resource "ansible_host" "slurm_compute_node_host" {
     slurm_features = jsonencode([ "batch" ])
     instance_type = each.value.type
     location = each.value.location
+    volumes = jsonencode(var.slurm_shared_volumes)
   }
 }
 

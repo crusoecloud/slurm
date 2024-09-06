@@ -20,7 +20,7 @@ By default, this solution will create a high-availability SLURM cluster with:
 ## Storage
 ![storage architecture](docs/img/slurm-storage.png)
 
-This solution currently supports three tiers of storage:
+This solution currently supports four tiers of storage:
 
 ### Local Scratch
 Each `slurm-compute-node` instance supports up to `7.5 TiB` of local scratch
@@ -52,7 +52,7 @@ The remote scratch size on common nfs node instance types are:
 * `s1a.40x`: 25.6 TiB
 * `c1a.176x`: None
 
-### Shared
+### Shared Home Directory
 The `slurm-nfs-node-0` node exports a persistent `/home` directory that is mounted by
 all login nodes and all compute nodes. This offers up to `10 TiB` of persistent shared
 storage.
@@ -60,6 +60,25 @@ storage.
 The `slurm_nfs_home_size` variable can optionally be set in the `terraform.tfvars` file
 to configure the size of the `/home` nfs share. If left unconfigured, this will default
 to 10 TiB. Note that `10 TiB` is the maximum currently supported by Crusoe Cloud.
+
+Note: the lifecycle of the shared home directory is tied to the lifecycle of the cluster.
+Deleting the cluster will delete the shared home directory. A seperate shared data
+directory is recommended for storing critical data.
+
+### Shared Data Directory
+The `slurm_shared_volumes` variable can be used to add additional
+[shared volumes](https://docs.crusoecloud.com/storage/disks/managing-shared-disks/index.html) storage
+to the cluster. This is the recommended way to add high-performance persistent file storage
+to your cluster.
+
+```
+slurm_shared_volumes = [{
+  id = "8146e3ef-4192-4f59-b2d6-6a8b3dfe5cf3"
+  name = "data-01"
+  mode = "read-write"
+  mount_point = "/mnt/data-01"
+}]
+```
 
 ## User Management
 To add additional users to your cluster, configure the `slurm_users` variable in your

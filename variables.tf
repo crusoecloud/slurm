@@ -150,3 +150,14 @@ variable "partitions" {
     }
   ]
 }
+
+variable "slurm_shared_volumes" {
+  description = "The shared volume mounts"
+  type = list(object({
+    id          = string
+    name        = string
+    mount_point = string 
+    mode        = string # "ready-only" | "read-write"
+  }))
+  default = []
+}

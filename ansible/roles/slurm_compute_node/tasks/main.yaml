@@ -36,3 +36,12 @@
     state: restarted
     enabled: true
     daemon_reload: true
+
+- name: Mount all volumes
+  ansible.posix.mount:
+    src: "{{ item.name }}"
+    path: "{{ item.mount_point }}"
+    opts: rw,nofail
+    state: mounted
+    fstype: virtiofs
+  loop: "{{ volumes }}"
