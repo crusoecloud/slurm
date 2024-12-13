@@ -24,16 +24,20 @@
     state: present
     update_cache: yes
 
-- name: Add Docker GPG key
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
+# - name: Add Docker GPG key
+#   apt_key:
+#     url: https://download.docker.com/linux/ubuntu/gpg
+#     state: present
 
-- name: Add Docker repository
-  apt_repository:
-    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-    state: present
-    filename: docker
+# - name: Add Docker repository
+#   apt_repository:
+#     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+#     state: present
+#     filename: docker
+
+# - name: Refresh apt
+#   apt:
+#     update_cache: true
 
 - name: Install Docker packages
   apt:
@@ -71,11 +75,11 @@
     remote_src: yes
     creates: /opt/node_exporter/node_exporter
 
-- name: Install NVIDIA Container Toolkit repository
-  apt_repository:
-    repo: deb https://nvidia.github.io/libnvidia-container/stable/ubuntu20.04/$(ARCH) /
-    state: present
-    filename: nvidia-container-toolkit
+# - name: Install NVIDIA Container Toolkit repository
+#   apt_repository:
+#     repo: deb https://nvidia.github.io/libnvidia-container/stable/ubuntu20.04/$(ARCH) /
+#     state: present
+#     filename: nvidia-container-toolkit
 
 - name: Install NVIDIA Container Toolkit
   apt:
@@ -84,19 +88,19 @@
     update_cache: yes
 
 - name: Pull DCGM Exporter container
-  docker_container:
+  community.docker.docker_container:
     name: dcgm-exporter
-    image: "nvidia/dcgm-exporter:{{ dcgm_exporter_version }}-ubuntu20.04"
+    image: "nvcr.io/nvidia/k8s/dcgm-exporter:{{ dcgm_exporter_version }}"
     state: started
     restart_policy: always
     ports:
       - "{{ dcgm_exporter_port }}:9400"
-    devices:
-      - "/dev/nvidiactl:/dev/nvidiactl"
-      - "/dev/nvidia0:/dev/nvidia0"
-    volumes:
-      - "/sys/class/nvidia-gpu:/sys/class/nvidia-gpu"
-      - "/run/nvidia-persistenced:/run/nvidia-persistenced"
+    capabilities:
+      - SYS_ADMIN
+    device_requests:
+      driver: nvidia
+      count: -1
+      
 
 - name: Add Grafana GPG key
   apt_key:
