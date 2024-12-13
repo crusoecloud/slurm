@@ -15,12 +15,19 @@
   become: yes
   roles:
     - slurm_head_node
+    - { role: observability, 
+        tags: ['observability'], 
+        when: enable_observability | default(false) | bool }
 
 - hosts: slurm_compute_nodes
   remote_user: ubuntu
   become: yes
   roles:
     - slurm_compute_node
+    - { role: observability, 
+        tags: ['observability'], 
+        prometheus_server: false,
+        when: enable_observability | default(false) | bool }
 
 - hosts: all
   remote_user: ubuntu

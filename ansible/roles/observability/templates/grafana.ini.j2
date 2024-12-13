@@ -1,0 +1,16 @@
+[server]
+http_addr = 0.0.0.0
+http_port = 3000
+
+[security]
+admin_user = admin
+admin_password = {{ grafana_admin_password | default('admin') }}
+
+[auth.anonymous]
+enabled = false
+
+[analytics]
+reporting_enabled = false
+
+[users]
+allow_sign_up = false 

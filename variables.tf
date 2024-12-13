@@ -161,3 +161,16 @@ variable "slurm_shared_volumes" {
   }))
   default = []
 }
+
+variable "enable_observability" {
+  description = "Enable observability stack (Prometheus, Grafana, GPU monitoring)"
+  type        = bool
+  default     = false
+}
+
+variable "grafana_admin_password" {
+  description = "Admin password for Grafana (if observability is enabled)"
+  type        = string
+  default     = "admin"
+  sensitive   = true
+}
