@@ -22,7 +22,7 @@
       - apt-transport-https
       - software-properties-common
     state: present
-    update_cache: yes
+    update_cache: true
 
 # - name: Add Docker GPG key
 #   apt_key:
@@ -48,13 +48,13 @@
       - docker-buildx-plugin
       - docker-compose-plugin
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Ensure Docker service is running
   systemd:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Install Python Docker package
   apt:
@@ -65,14 +65,14 @@
   unarchive:
     src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
     dest: /opt/prometheus
-    remote_src: yes
+    remote_src: true
     creates: /opt/prometheus/prometheus
 
 - name: Download and install Node Exporter
   unarchive:
     src: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
     dest: /opt/node_exporter
-    remote_src: yes
+    remote_src: true
     creates: /opt/node_exporter/node_exporter
 
 # - name: Install NVIDIA Container Toolkit repository
@@ -85,7 +85,7 @@
   apt:
     name: nvidia-container-toolkit
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Pull DCGM Exporter container
   community.docker.docker_container:
@@ -100,7 +100,7 @@
     device_requests:
       driver: nvidia
       count: -1
-      
+
 
 - name: Add Grafana GPG key
   apt_key:
@@ -117,7 +117,7 @@
   apt:
     name: grafana
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Configure Prometheus
   template:
@@ -201,7 +201,7 @@
 - name: Create users and set permissions
   user:
     name: "{{ item.user }}"
-    system: yes
+    system: true
     create_home: no
     shell: /sbin/nologin
   with_items:
@@ -213,7 +213,7 @@
     path: "{{ item.path }}"
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
-    recurse: yes
+    recurse: true
   with_items:
     - { path: '/opt/prometheus', owner: '{{ prometheus_user }}', group: '{{ prometheus_group }}' }
     - { path: '/opt/node_exporter', owner: '{{ node_exporter_user }}', group: '{{ node_exporter_group }}' }
