@@ -367,7 +367,7 @@
           },
           "expr": "rate(node_network_receive_bytes_total{device!~\"lo\"}[5m])",
           "refId": "A",
-          "legendFormat": "{{device}} Receive"
+          "legendFormat": "{% raw %}{{device}}{% endraw %} Receive"
         },
         {
           "datasource": {
@@ -376,7 +376,7 @@
           },
           "expr": "rate(node_network_transmit_bytes_total{device!~\"lo\"}[5m])",
           "refId": "B",
-          "legendFormat": "{{device}} Transmit"
+          "legendFormat": "{% raw %}{{device}}{% endraw %} Transmit"
         }
       ]
     }
