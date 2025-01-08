@@ -29,4 +29,9 @@
   with_items:
     - prometheus
     - node_exporter
-    - grafana-server 
+    - grafana-server
+
+- name: restart docker
+  systemd:
+    name: docker
+    state: restarted 

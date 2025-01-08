@@ -1,220 +1,160 @@
 ---
-- name: Create directories for observability stack
+# Common tasks for all nodes
+- name: Create node_exporter directory
   file:
-    path: "{{ item }}"
+    path: /opt/node_exporter
     state: directory
     mode: '0755'
-  with_items:
-    - /opt/prometheus
-    - /opt/grafana
-    - /opt/node_exporter
-    - /opt/dcgm_exporter
-    - /etc/prometheus
-    - /etc/grafana
-    - /var/lib/grafana/dashboards
 
-- name: Install required packages
-  apt:
-    name:
-      - curl
-      - wget
-      - gnupg2
-      - apt-transport-https
-      - software-properties-common
-    state: present
-    update_cache: true
-
-# - name: Add Docker GPG key
-#   apt_key:
-#     url: https://download.docker.com/linux/ubuntu/gpg
-#     state: present
-
-# - name: Add Docker repository
-#   apt_repository:
-#     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-#     state: present
-#     filename: docker
-
-# - name: Refresh apt
-#   apt:
-#     update_cache: true
-
-- name: Install Docker packages
-  apt:
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-buildx-plugin
-      - docker-compose-plugin
-    state: present
-    update_cache: true
-
-- name: Ensure Docker service is running
-  systemd:
-    name: docker
-    state: started
-    enabled: true
-
-- name: Install Python Docker package
-  apt:
-    name: python3-docker
-    state: present
-
-- name: Download and install Prometheus
-  unarchive:
-    src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
-    dest: /opt/prometheus
-    remote_src: true
-    creates: /opt/prometheus/prometheus
-
-- name: Download and install Node Exporter
+- name: Install Node Exporter
   unarchive:
     src: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
     dest: /opt/node_exporter
     remote_src: true
     creates: /opt/node_exporter/node_exporter
 
-# - name: Install NVIDIA Container Toolkit repository
-#   apt_repository:
-#     repo: deb https://nvidia.github.io/libnvidia-container/stable/ubuntu20.04/$(ARCH) /
-#     state: present
-#     filename: nvidia-container-toolkit
-
-- name: Install NVIDIA Container Toolkit
-  apt:
-    name: nvidia-container-toolkit
-    state: present
-    update_cache: true
-
-- name: Pull DCGM Exporter container
-  community.docker.docker_container:
-    name: dcgm-exporter
-    image: "nvcr.io/nvidia/k8s/dcgm-exporter:{{ dcgm_exporter_version }}"
-    state: started
-    restart_policy: always
-    ports:
-      - "{{ dcgm_exporter_port }}:9400"
-    capabilities:
-      - SYS_ADMIN
-    device_requests:
-      driver: nvidia
-      count: -1
-
-
-- name: Add Grafana GPG key
-  apt_key:
-    url: https://packages.grafana.com/gpg.key
-    state: present
-
-- name: Add Grafana repository
-  apt_repository:
-    repo: deb https://packages.grafana.com/oss/deb stable main
-    state: present
-    filename: grafana
-
-- name: Install Grafana
-  apt:
-    name: grafana
-    state: present
-    update_cache: true
-
-- name: Configure Prometheus
-  template:
-    src: prometheus.yml.j2
-    dest: /etc/prometheus/prometheus.yml
-  notify: restart prometheus
-
-- name: Configure Grafana
-  template:
-    src: grafana.ini.j2
-    dest: /etc/grafana/grafana.ini
-  notify: restart grafana
-
-- name: Create systemd service files
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-  with_items:
-    - { src: 'prometheus.service.j2', dest: '/etc/systemd/system/prometheus.service' }
-    - { src: 'node_exporter.service.j2', dest: '/etc/systemd/system/node_exporter.service' }
-  notify:
-    - reload systemd
-    - restart services
-
-- name: Create Grafana dashboards directory
-  file:
-    path: /var/lib/grafana/dashboards
-    state: directory
-    owner: grafana
-    group: grafana
-    mode: '0755'
-
-- name: Configure Grafana dashboard provisioning
-  copy:
-    content: |
-      apiVersion: 1
-      providers:
-        - name: 'default'
-          orgId: 1
-          folder: ''
-          type: file
-          disableDeletion: false
-          updateIntervalSeconds: 10
-          allowUiUpdates: true
-          options:
-            path: /var/lib/grafana/dashboards
-    dest: /etc/grafana/provisioning/dashboards/default.yaml
-    owner: grafana
-    group: grafana
-    mode: '0644'
-  notify: restart grafana
-
-- name: Configure Grafana datasource provisioning
-  copy:
-    content: |
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          type: prometheus
-          access: proxy
-          url: http://localhost:{{ prometheus_port }}
-          isDefault: true
-    dest: /etc/grafana/provisioning/datasources/prometheus.yaml
-    owner: grafana
-    group: grafana
-    mode: '0644'
-  notify: restart grafana
-
-- name: Copy Grafana dashboards
-  template:
-    src: "{{ item }}"
-    dest: "/var/lib/grafana/dashboards/{{ item | basename | regex_replace('\\.j2$', '') }}"
-    owner: grafana
-    group: grafana
-    mode: '0644'
-  with_items:
-    - gpu-dashboard.json.j2
-    - node-dashboard.json.j2
-  notify: restart grafana
-
-- name: Create users and set permissions
+- name: Create node_exporter user
   user:
-    name: "{{ item.user }}"
+    name: "{{ node_exporter_user }}"
     system: true
     create_home: no
     shell: /sbin/nologin
-  with_items:
-    - { user: "{{ prometheus_user }}" }
-    - { user: "{{ node_exporter_user }}" }
 
-- name: Set directory permissions
+- name: Configure node_exporter service
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+  notify:
+    - reload systemd
+    - restart node_exporter
+
+# Head node specific tasks
+- name: Install monitoring stack on head node
+  when: inventory_hostname in groups['slurm_head_nodes']
+  block:
+    - name: Create directories for monitoring stack
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      with_items:
+        - /opt/prometheus
+        - /opt/grafana
+        - /etc/prometheus
+        - /etc/grafana
+        - /var/lib/grafana/dashboards
+
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - wget
+          - gnupg2
+          - apt-transport-https
+          - software-properties-common
+        state: present
+        update_cache: true
+
+    - name: Install and configure Prometheus
+      block:
+        - name: Download and install Prometheus
+          unarchive:
+            src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+            dest: /opt/prometheus
+            remote_src: true
+            creates: /opt/prometheus/prometheus
+
+        - name: Configure Prometheus
+          template:
+            src: prometheus.yml.j2
+            dest: /etc/prometheus/prometheus.yml
+          notify: restart prometheus
+
+        - name: Create prometheus user
+          user:
+            name: "{{ prometheus_user }}"
+            system: true
+            create_home: no
+            shell: /sbin/nologin
+
+        - name: Create prometheus service
+          template:
+            src: prometheus.service.j2
+            dest: /etc/systemd/system/prometheus.service
+          notify:
+            - reload systemd
+            - restart prometheus
+
+    - name: Install and configure Grafana
+      block:
+        - name: Add Grafana GPG key
+          apt_key:
+            url: https://packages.grafana.com/gpg.key
+            state: present
+
+        - name: Add Grafana repository
+          apt_repository:
+            repo: deb https://packages.grafana.com/oss/deb stable main
+            state: present
+            filename: grafana
+
+        - name: Install Grafana
+          apt:
+            name: grafana
+            state: present
+            update_cache: true
+
+        - name: Configure Grafana
+          template:
+            src: grafana.ini.j2
+            dest: /etc/grafana/grafana.ini
+          notify: restart grafana
+
+        - name: Configure Grafana dashboards and datasources
+          include_tasks: configure_grafana.yml
+
+# Compute node specific tasks
+- name: Setup NVIDIA monitoring on compute nodes
+  when: inventory_hostname in groups['slurm_compute_nodes']
+  block:
+    - name: Install Docker and dependencies
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+          - python3-docker
+        state: present
+        update_cache: true
+
+    - name: Ensure Docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Setup NVIDIA components
+      include_tasks: setup_nvidia.yml
+
+    - name: Pull DCGM Exporter container
+      community.docker.docker_container:
+        name: dcgm-exporter
+        image: "nvcr.io/nvidia/k8s/dcgm-exporter:{{ dcgm_exporter_version }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ dcgm_exporter_port }}:9400"
+        runtime: nvidia
+        device_requests:
+          - capabilities: [["gpu"]]
+
+- name: Create Prometheus data directory
   file:
-    path: "{{ item.path }}"
-    owner: "{{ item.owner }}"
-    group: "{{ item.group }}"
-    recurse: true
-  with_items:
-    - { path: '/opt/prometheus', owner: '{{ prometheus_user }}', group: '{{ prometheus_group }}' }
-    - { path: '/opt/node_exporter', owner: '{{ node_exporter_user }}', group: '{{ node_exporter_group }}' }
-    - { path: '/etc/prometheus', owner: '{{ prometheus_user }}', group: '{{ prometheus_group }}' } 
+    path: /opt/prometheus/data
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: '0755'
+  when: inventory_hostname in groups['slurm_head_nodes'] 
