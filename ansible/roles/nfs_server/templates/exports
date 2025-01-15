@@ -1,5 +1,5 @@
 /home *(rw,async,no_root_squash,no_subtree_check)
-/var/spool/slurmctld *(rw,sync,no_root_squash,no_subtree_check)
+/var/spool/slurmctld {{ (hostvars['slurm-nfs-node-0'].slurm_vpc_subnet_cidr)}}(rw,sync,no_root_squash,no_subtree_check)
 {% if (disk_count | int) > 0 %}
 /scratch/shared *(rw,sync,no_root_squash,no_subtree_check)
 {% endif %}
