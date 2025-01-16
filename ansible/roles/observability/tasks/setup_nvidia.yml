@@ -15,6 +15,11 @@
 #     name: nvidia
 #     state: present
 
+- name: Unhold NVIDIA Container Runtime package
+  dpkg_selections:
+    name: nvidia-container-runtime
+    selection: install
+
 - name: Configure nvidia-container-runtime
   copy:
     dest: /etc/nvidia-container-runtime/config.toml
@@ -33,6 +38,7 @@
       - nvidia-container-runtime
     state: present
     update_cache: true
+    allow_change_held_packages: yes
 
 - name: Configure nvidia-container-runtime
   shell: nvidia-ctk runtime configure --runtime=docker
