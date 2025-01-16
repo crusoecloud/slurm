@@ -179,50 +179,50 @@
     - prometheus
     - grafana-server 
 
-- name: Debug Prometheus status
-  when: inventory_hostname in groups['slurm_head_nodes']
-  block:
-    - name: Check Prometheus service status
-      command: systemctl status prometheus
-      register: prometheus_status
-      changed_when: false
-      ignore_errors: true
+# - name: Debug Prometheus status
+#   when: inventory_hostname in groups['slurm_head_nodes']
+#   block:
+#     - name: Check Prometheus service status
+#       command: systemctl status prometheus
+#       register: prometheus_status
+#       changed_when: false
+#       ignore_errors: true
 
-    - name: Check Prometheus port
-      command: ss -tulpn | grep {{ prometheus_port }}
-      register: prometheus_port_check
-      changed_when: false
-      ignore_errors: true
+#     - name: Check Prometheus port
+#       command: ss -tulpn | grep {{ prometheus_port }}
+#       register: prometheus_port_check
+#       changed_when: false
+#       ignore_errors: true
 
-    - name: Check if Prometheus is responding
-      uri:
-        url: "http://localhost:{{ prometheus_port }}/api/v1/status/config"
-        method: GET
-      register: prometheus_response
-      ignore_errors: true
+#     - name: Check if Prometheus is responding
+#       uri:
+#         url: "http://localhost:{{ prometheus_port }}/api/v1/status/config"
+#         method: GET
+#       register: prometheus_response
+#       ignore_errors: true
 
-    - name: Debug output
-      debug:
-        msg: 
-          - "Prometheus service status: {{ prometheus_status.stdout }}"
-          - "Prometheus port check: {{ prometheus_port_check.stdout }}"
-          - "Prometheus API response: {{ prometheus_response }}" 
+#     - name: Debug output
+#       debug:
+#         msg: 
+#           - "Prometheus service status: {{ prometheus_status.stdout }}"
+#           - "Prometheus port check: {{ prometheus_port_check.stdout }}"
+#           - "Prometheus API response: {{ prometheus_response }}" 
 
-- name: Debug Prometheus setup
-  when: inventory_hostname in groups['slurm_head_nodes']
-  block:
-    - name: Check Prometheus directories permissions
-      command: ls -la /opt/prometheus/
-      register: prometheus_dir_perms
-      changed_when: false
+# - name: Debug Prometheus setup
+#   when: inventory_hostname in groups['slurm_head_nodes']
+#   block:
+#     - name: Check Prometheus directories permissions
+#       command: ls -la /opt/prometheus/
+#       register: prometheus_dir_perms
+#       changed_when: false
 
-    - name: Check Prometheus config permissions
-      command: ls -la /etc/prometheus/
-      register: prometheus_config_perms
-      changed_when: false
+#     - name: Check Prometheus config permissions
+#       command: ls -la /etc/prometheus/
+#       register: prometheus_config_perms
+#       changed_when: false
 
-    - name: Debug permissions
-      debug:
-        msg:
-          - "Prometheus directory permissions: {{ prometheus_dir_perms.stdout }}"
-          - "Prometheus config permissions: {{ prometheus_config_perms.stdout }}" 
+#     - name: Debug permissions
+#       debug:
+#         msg:
+#           - "Prometheus directory permissions: {{ prometheus_dir_perms.stdout }}"
+#           - "Prometheus config permissions: {{ prometheus_config_perms.stdout }}" 
