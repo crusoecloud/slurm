@@ -29,6 +29,10 @@
           access: proxy
           url: http://localhost:{{ prometheus_port }}
           isDefault: true
+          uid: prometheus
+          jsonData:
+            timeInterval: "15s"
+          version: 1
     dest: /etc/grafana/provisioning/datasources/prometheus.yaml
     owner: grafana
     group: grafana

@@ -114,8 +114,11 @@
           include_tasks: configure_grafana.yml
 
 # Compute node specific tasks
-- name: Setup NVIDIA monitoring on compute nodes
-  when: inventory_hostname in groups['slurm_compute_nodes']
+- name: Setup NVIDIA monitoring on GPU nodes
+  when: 
+    - inventory_hostname in groups['slurm_compute_nodes']
+    - instance_type is defined
+    - instance_type.split('.')[0] | regex_search(gpu_instance_types | join('|'))
   block:
     - name: Install Docker and dependencies
       apt:
@@ -158,3 +161,68 @@
     group: "{{ prometheus_group }}"
     mode: '0755'
   when: inventory_hostname in groups['slurm_head_nodes'] 
+
+- name: Ensure Prometheus is running
+  systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+  when: inventory_hostname in groups['slurm_head_nodes'] 
+
+- name: Ensure services are running
+  when: inventory_hostname in groups['slurm_head_nodes']
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items:
+    - prometheus
+    - grafana-server 
+
+- name: Debug Prometheus status
+  when: inventory_hostname in groups['slurm_head_nodes']
+  block:
+    - name: Check Prometheus service status
+      command: systemctl status prometheus
+      register: prometheus_status
+      changed_when: false
+      ignore_errors: true
+
+    - name: Check Prometheus port
+      command: ss -tulpn | grep {{ prometheus_port }}
+      register: prometheus_port_check
+      changed_when: false
+      ignore_errors: true
+
+    - name: Check if Prometheus is responding
+      uri:
+        url: "http://localhost:{{ prometheus_port }}/api/v1/status/config"
+        method: GET
+      register: prometheus_response
+      ignore_errors: true
+
+    - name: Debug output
+      debug:
+        msg: 
+          - "Prometheus service status: {{ prometheus_status.stdout }}"
+          - "Prometheus port check: {{ prometheus_port_check.stdout }}"
+          - "Prometheus API response: {{ prometheus_response }}" 
+
+- name: Debug Prometheus setup
+  when: inventory_hostname in groups['slurm_head_nodes']
+  block:
+    - name: Check Prometheus directories permissions
+      command: ls -la /opt/prometheus/
+      register: prometheus_dir_perms
+      changed_when: false
+
+    - name: Check Prometheus config permissions
+      command: ls -la /etc/prometheus/
+      register: prometheus_config_perms
+      changed_when: false
+
+    - name: Debug permissions
+      debug:
+        msg:
+          - "Prometheus directory permissions: {{ prometheus_dir_perms.stdout }}"
+          - "Prometheus config permissions: {{ prometheus_config_perms.stdout }}" 

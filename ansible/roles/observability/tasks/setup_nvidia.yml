@@ -1,19 +1,19 @@
 ---
-- name: Add NVIDIA driver repository
-  apt_repository:
-    repo: ppa:graphics-drivers/ppa
-    state: present
+# - name: Add NVIDIA driver repository
+#   apt_repository:
+#     repo: ppa:graphics-drivers/ppa
+#     state: present
 
-- name: Install NVIDIA driver
-  apt:
-    name: nvidia-driver-550
-    state: present
-    update_cache: true
+# - name: Install NVIDIA driver
+#   apt:
+#     name: nvidia-driver-550
+#     state: present
+#     update_cache: true
 
-- name: Load NVIDIA driver module
-  modprobe:
-    name: nvidia
-    state: present
+# - name: Load NVIDIA driver module
+#   modprobe:
+#     name: nvidia
+#     state: present
 
 - name: Configure nvidia-container-runtime
   copy:
