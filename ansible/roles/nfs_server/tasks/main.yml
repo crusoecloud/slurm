@@ -5,10 +5,10 @@
   when: item.mount == "/home"
   register: home_mount_exists
 
-- name: Create a ext4 filesystem on /dev/vdb
+- name: Create a xfs filesystem on /dev/vdb
   tags: nfs_server
   community.general.filesystem:
-    fstype: ext4
+    fstype: xfs
     dev: /dev/vdb
     
 - name: Mount vdb to /mnt/home
@@ -16,7 +16,7 @@
   ansible.posix.mount:
     path: /mnt/home
     src: /dev/vdb
-    fstype: ext4
+    fstype: xfs
     state: mounted
   when: home_mount_exists is skipped
 
@@ -30,7 +30,7 @@
   ansible.posix.mount:
     path: /mnt/home
     src: /dev/vdb
-    fstype: ext4
+    fstype: xfs
     state: unmounted
 
 - name: Mount vdb to /home
@@ -38,7 +38,7 @@
   ansible.posix.mount:
     path: /home
     src: /dev/vdb
-    fstype: ext4
+    fstype: xfs
     state: mounted
 
 - name: Install nfs-server
