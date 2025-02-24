@@ -1,0 +1,37 @@
+---
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: restart prometheus
+  systemd:
+    name: prometheus
+    state: restarted
+    enabled: yes
+
+- name: restart node_exporter
+  systemd:
+    name: node_exporter
+    state: restarted
+    enabled: yes
+
+- name: restart grafana
+  systemd:
+    name: grafana-server
+    state: restarted
+    enabled: yes
+
+- name: restart services
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items:
+    - prometheus
+    - node_exporter
+    - grafana-server
+
+- name: restart docker
+  systemd:
+    name: docker
+    state: restarted 

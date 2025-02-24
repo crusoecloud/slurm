@@ -1,0 +1,52 @@
+---
+- name: Configure Grafana dashboard provisioning
+  copy:
+    content: |
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          updateIntervalSeconds: 10
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards
+    dest: /etc/grafana/provisioning/dashboards/default.yaml
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: restart grafana
+
+- name: Configure Grafana datasource provisioning
+  copy:
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://localhost:{{ prometheus_port }}
+          isDefault: true
+          uid: prometheus
+          jsonData:
+            timeInterval: "15s"
+          version: 1
+    dest: /etc/grafana/provisioning/datasources/prometheus.yaml
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: restart grafana
+
+- name: Copy Grafana dashboards
+  template:
+    src: "{{ item }}"
+    dest: "/var/lib/grafana/dashboards/{{ item | basename | regex_replace('\\.j2$', '') }}"
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  with_items:
+    - gpu-dashboard.json.j2
+    - node-dashboard.json.j2
+  notify: restart grafana 

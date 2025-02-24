@@ -1,0 +1,7 @@
+gpu_instance_types:
+  - "a40"
+  - "a100"
+  - "h100"
+  - "l40s"
+  - "h200"
+  
