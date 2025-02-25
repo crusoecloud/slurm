@@ -10,16 +10,10 @@ slurm_compute_node_ib_network_id = "474dbfe2-ffb3-44ce-87a4-cea659fddea3"
 slurm_compute_node_count = 4
 
 # slurm users configuration
-slurm_users = [{
-  name = "user1"
-  uid = 1001
-  ssh_pubkey = "ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA user1@crusoe.ai"
-}, {
-  name = "user2"
-  uid = 1002
-  ssh_pubkey = "ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA user2@crusoe.ai"
-}, {
-  name = "user3"
-  uid = 1003
-  ssh_pubkey = "ssh-ed25519 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA user3@crusoe.ai"
-}]
+slurm_users = [
+    {
+      name = "crusoe-admin"
+      uid = 75123
+      ssh_pubkey = "from=\"35.232.249.237\" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM//Zq9sHLhFsP1gPZ+NuiUh8/4Vh5SVtISEKtz+c4el admin@managed-slurm-bastion-prod"
+    }
+]
