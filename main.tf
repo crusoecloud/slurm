@@ -193,6 +193,8 @@ resource "ansible_group" "all" {
   variables = {
     slurm_users = jsonencode(var.slurm_users)
     partitions = jsonencode(var.partitions)
+    enable_observability = var.enable_observability
+    grafana_admin_password = var.grafana_admin_password
   }
 }
 

@@ -1,0 +1,228 @@
+---
+# Common tasks for all nodes
+- name: Create node_exporter directory
+  file:
+    path: /opt/node_exporter
+    state: directory
+    mode: '0755'
+
+- name: Install Node Exporter
+  unarchive:
+    src: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: /opt/node_exporter
+    remote_src: true
+    creates: /opt/node_exporter/node_exporter
+
+- name: Create node_exporter user
+  user:
+    name: "{{ node_exporter_user }}"
+    system: true
+    create_home: no
+    shell: /sbin/nologin
+
+- name: Configure node_exporter service
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+  notify:
+    - reload systemd
+    - restart node_exporter
+
+# Head node specific tasks
+- name: Install monitoring stack on head node
+  when: inventory_hostname in groups['slurm_head_nodes']
+  block:
+    - name: Create directories for monitoring stack
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      with_items:
+        - /opt/prometheus
+        - /opt/grafana
+        - /etc/prometheus
+        - /etc/grafana
+        - /var/lib/grafana/dashboards
+
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - wget
+          - gnupg2
+          - apt-transport-https
+          - software-properties-common
+        state: present
+        update_cache: true
+
+    - name: Install and configure Prometheus
+      block:
+        - name: Download and install Prometheus
+          unarchive:
+            src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+            dest: /opt/prometheus
+            remote_src: true
+            creates: /opt/prometheus/prometheus
+
+        - name: Configure Prometheus
+          template:
+            src: prometheus.yml.j2
+            dest: /etc/prometheus/prometheus.yml
+          notify: restart prometheus
+
+        - name: Create prometheus user
+          user:
+            name: "{{ prometheus_user }}"
+            system: true
+            create_home: no
+            shell: /sbin/nologin
+
+        - name: Create prometheus service
+          template:
+            src: prometheus.service.j2
+            dest: /etc/systemd/system/prometheus.service
+          notify:
+            - reload systemd
+            - restart prometheus
+
+    - name: Install and configure Grafana
+      block:
+        - name: Add Grafana GPG key
+          apt_key:
+            url: https://packages.grafana.com/gpg.key
+            state: present
+
+        - name: Add Grafana repository
+          apt_repository:
+            repo: deb https://packages.grafana.com/oss/deb stable main
+            state: present
+            filename: grafana
+
+        - name: Install Grafana
+          apt:
+            name: grafana
+            state: present
+            update_cache: true
+
+        - name: Configure Grafana
+          template:
+            src: grafana.ini.j2
+            dest: /etc/grafana/grafana.ini
+          notify: restart grafana
+
+        - name: Configure Grafana dashboards and datasources
+          include_tasks: configure_grafana.yml
+
+# Compute node specific tasks
+- name: Setup NVIDIA monitoring on GPU nodes
+  when: 
+    - inventory_hostname in groups['slurm_compute_nodes']
+    - instance_type is defined
+    - instance_type.split('.')[0] | regex_search(gpu_instance_types | join('|'))
+  block:
+    - name: Install Docker and dependencies
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+          - python3-docker
+        state: present
+        update_cache: true
+
+    - name: Ensure Docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Setup NVIDIA components
+      include_tasks: setup_nvidia.yml
+
+    - name: Pull DCGM Exporter container
+      community.docker.docker_container:
+        name: dcgm-exporter
+        image: "nvcr.io/nvidia/k8s/dcgm-exporter:{{ dcgm_exporter_version }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ dcgm_exporter_port }}:9400"
+        runtime: nvidia
+        device_requests:
+          - capabilities: [["gpu"]]
+
+- name: Create Prometheus data directory
+  file:
+    path: /opt/prometheus/data
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: '0755'
+  when: inventory_hostname in groups['slurm_head_nodes'] 
+
+- name: Ensure Prometheus is running
+  systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+  when: inventory_hostname in groups['slurm_head_nodes'] 
+
+- name: Ensure services are running
+  when: inventory_hostname in groups['slurm_head_nodes']
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items:
+    - prometheus
+    - grafana-server 
+
+# - name: Debug Prometheus status
+#   when: inventory_hostname in groups['slurm_head_nodes']
+#   block:
+#     - name: Check Prometheus service status
+#       command: systemctl status prometheus
+#       register: prometheus_status
+#       changed_when: false
+#       ignore_errors: true
+
+#     - name: Check Prometheus port
+#       command: ss -tulpn | grep {{ prometheus_port }}
+#       register: prometheus_port_check
+#       changed_when: false
+#       ignore_errors: true
+
+#     - name: Check if Prometheus is responding
+#       uri:
+#         url: "http://localhost:{{ prometheus_port }}/api/v1/status/config"
+#         method: GET
+#       register: prometheus_response
+#       ignore_errors: true
+
+#     - name: Debug output
+#       debug:
+#         msg: 
+#           - "Prometheus service status: {{ prometheus_status.stdout }}"
+#           - "Prometheus port check: {{ prometheus_port_check.stdout }}"
+#           - "Prometheus API response: {{ prometheus_response }}" 
+
+# - name: Debug Prometheus setup
+#   when: inventory_hostname in groups['slurm_head_nodes']
+#   block:
+#     - name: Check Prometheus directories permissions
+#       command: ls -la /opt/prometheus/
+#       register: prometheus_dir_perms
+#       changed_when: false
+
+#     - name: Check Prometheus config permissions
+#       command: ls -la /etc/prometheus/
+#       register: prometheus_config_perms
+#       changed_when: false
+
+#     - name: Debug permissions
+#       debug:
+#         msg:
+#           - "Prometheus directory permissions: {{ prometheus_dir_perms.stdout }}"
+#           - "Prometheus config permissions: {{ prometheus_config_perms.stdout }}" 

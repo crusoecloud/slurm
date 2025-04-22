@@ -1,0 +1,67 @@
+---
+# - name: Add NVIDIA driver repository
+#   apt_repository:
+#     repo: ppa:graphics-drivers/ppa
+#     state: present
+
+# - name: Install NVIDIA driver
+#   apt:
+#     name: nvidia-driver-550
+#     state: present
+#     update_cache: true
+
+# - name: Load NVIDIA driver module
+#   modprobe:
+#     name: nvidia
+#     state: present
+
+- name: Unhold NVIDIA Container Runtime package
+  dpkg_selections:
+    name: nvidia-container-runtime
+    selection: install
+
+- name: Configure nvidia-container-runtime
+  copy:
+    dest: /etc/nvidia-container-runtime/config.toml
+    content: |
+      disable-require = false
+      debug = "/var/log/nvidia-container-runtime.log"
+      [nvidia-container-cli]
+      debug = "/var/log/nvidia-container-cli.log"
+    mode: '0644'
+  register: nvidia_config
+
+- name: Install NVIDIA Container Toolkit
+  apt:
+    name: 
+      - nvidia-container-toolkit
+      - nvidia-container-runtime
+    state: present
+    update_cache: true
+    allow_change_held_packages: yes
+
+- name: Configure nvidia-container-runtime
+  shell: nvidia-ctk runtime configure --runtime=docker
+  notify: restart docker
+
+- name: Create Docker daemon.json
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+          "default-runtime": "nvidia",
+          "runtimes": {
+              "nvidia": {
+                  "path": "nvidia-container-runtime",
+                  "runtimeArgs": []
+              }
+          }
+      }
+    mode: '0644'
+  register: docker_config
+
+- name: Restart Docker if config changed
+  systemd:
+    name: docker
+    state: restarted
+  when: docker_config.changed 

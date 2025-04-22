@@ -1,0 +1,16 @@
+[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/opt/node_exporter/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter \
+    --web.listen-address=:{{ node_exporter_port }} \
+    --collector.systemd \
+    --collector.processes
+
+[Install]
+WantedBy=multi-user.target 
