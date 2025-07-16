@@ -1,4 +1,3 @@
-ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
 ansible_ssh_timeout: 600
 ansible_ssh_retries: 10
 
