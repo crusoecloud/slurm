@@ -6,7 +6,7 @@ vpc_subnet_id = "80cf6356-da22-42c8-8925-d5fb1e3e55ad"
 
 # slurm-compute-node configuration
 slurm_compute_node_type = "h100-80gb-sxm-ib.8x"
-slurm_compute_node_ib_network_id = "474dbfe2-ffb3-44ce-87a4-cea659fddea3"
+slurm_compute_node_ib_partition_id = "474dbfe2-ffb3-44ce-87a4-cea659fddea3"
 slurm_compute_node_count = 4
 
 # slurm users configuration
