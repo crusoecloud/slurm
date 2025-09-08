@@ -1,12 +1,3 @@
-- name: Install nfs-client
-  tags: nfs_client
-  ansible.builtin.apt:
-    name: 
-      - nfs-common
-      - autofs
-    state: latest
-    update_cache: yes
-
 - name: Add /home entry to /etc/auto.master
   tags: nfs_client
   ansible.builtin.lineinfile:

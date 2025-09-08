@@ -1,0 +1,28 @@
+#!/bin/bash
+
+NVME_CMD="/usr/sbin/nvme"
+
+# Check if the nvme command exists and is executable
+if [ -x "$NVME_CMD" ]; then
+    # Run the command, silencing stderr, and defaulting to 0 if grep finds nothing
+    nvme_count=$($NVME_CMD list 2>/dev/null | grep -c '^/dev/nvme' || true)
+else
+    nvme_count=0
+fi
+
+# Set the boolean based on the count
+if [ "$nvme_count" -gt 0 ]; then
+    is_present="true"
+else
+    is_present="false"
+fi
+
+
+cat << EOF
+{
+    "nvme": {
+        "present": ${is_present},
+        "count": ${nvme_count}
+    }
+}
+EOF

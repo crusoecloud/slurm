@@ -1,0 +1,14 @@
+- name: Reload udev rules
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - udevadm control --reload-rules
+    - udevadm trigger --verbose --action add --subsystem-match nvme
+    - udevadm trigger --verbose --action add
+
+- name: Restart netplan
+  ansible.builtin.shell:
+    cmd: netplan apply 
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes

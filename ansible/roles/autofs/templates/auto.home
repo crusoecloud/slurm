@@ -1,4 +1,3 @@
-# original autofs parameters
-# * -soft,rsize=262144,wsize=262144 slurm-nfs-node-0:/home/&
-# upgraded autofs parameters
+# autofs parameters
 * -soft,rsize=1048576,wsize=1048576,ac,actimeo=3,noatime,nodiratime,vers=4.2,proto=tcp slurm-nfs-node-0:/home/&
+

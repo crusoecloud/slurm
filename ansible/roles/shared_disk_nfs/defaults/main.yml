@@ -1,0 +1,10 @@
+# directory to use for building the drivers
+install_dir: "/tmp/vast-build"
+
+# The desired read-ahead cache size in kilobytes (16MB).
+read_ahead_kb_size: 16384
+
+# The interface and ring buffer values to apply on the default interface
+interface_name: "{{ ansible_default_ipv4.interface }}"
+rx_buffer_size: 8192
+tx_buffer_size: 8192

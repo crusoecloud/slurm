@@ -1,10 +1,26 @@
 - name: Configure autofs
   ansible.builtin.import_role:
     name: autofs
-  
-- name: Install dependencies
-  ansible.builtin.apt:
-    name: nfs-common
+  when:
+    - not use_vast_nfs | default(false) | bool
+    
+- name: Mount /var/spool/slurmctld
+  ansible.posix.mount:
+    src: >-
+      {{
+        "slurm-nfs-node-0:/var/spool/slurmctld"
+        if not (use_vast_nfs | default(false) | bool)
+        else "100.64.0.2:/volumes/" ~ slurmctld_disk_id
+      }}
+    path: /var/spool/slurmctld
+    opts: >-
+      {{
+        "rw,sync,soft"
+        if not (use_vast_nfs | default(false) | bool)
+        else "vers=3,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
+      }}
+    state: mounted
+    fstype: nfs
 
 - name: Install override.conf
   ansible.builtin.template:
@@ -13,14 +29,6 @@
     owner: root
     group: root
     mode: '0644'
-
-- name: Mount /var/spool/slurmctld
-  ansible.posix.mount:
-    src: "slurm-nfs-node-0:/var/spool/slurmctld"
-    path: /var/spool/slurmctld
-    opts: rw,sync,soft
-    state: mounted
-    fstype: nfs
 
 - name: Install slurm conf
   ansible.builtin.import_role:

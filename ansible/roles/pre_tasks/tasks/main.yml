@@ -1,0 +1,51 @@
+- name: Ensure required packages are installed
+  ansible.builtin.apt:
+    name:
+      - nvme-cli
+      - mdadm
+      - nfs-common
+      - autofs
+      - autotools-dev
+      - debhelper
+      - dpkg-dev
+      - gcc-12
+      - ethtool
+    state: latest
+    update_cache: true 
+
+- name: Ensure custom facts directory exists
+  ansible.builtin.file:
+    path: /etc/ansible/facts.d
+    state: directory
+    mode: '0755'
+
+- name: Deploy custom NVMe fact script
+  ansible.builtin.copy:
+    src: nvme.fact  # Path to the script on your Ansible controller
+    dest: /etc/ansible/facts.d/nvme.fact
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Set architecture for amd64
+  set_fact:
+    linux_arch: amd64
+  when: ansible_architecture == "x86_64"
+
+- name: Set architecture for arm64
+  set_fact:
+    linux_arch: arm64
+  when: ansible_architecture == "aarch64"
+
+- name: Re-gather facts to find the new custom fact
+  ansible.builtin.setup:
+
+- name: Configure nfs-client if using VAST NFS
+  ansible.builtin.import_role:
+    name: shared_disk_nfs
+  when: use_vast_nfs | default(false) | bool
+
+- name: Configure nfs-client if using VAST NFS
+  ansible.builtin.import_role:
+    name: vast_home
+  when: use_vast_nfs | default(false) | bool

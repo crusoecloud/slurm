@@ -9,5 +9,5 @@
       user_name: "{{ item.name }}"
       user_uid: "{{ item.uid }}"
       user_ssh_pubkey: "{{ item.ssh_pubkey }}"
-    loop: "{{ slurm_users }}"
+    loop: "{{ slurm_users | from_json}}"
     when: slurm_users is defined

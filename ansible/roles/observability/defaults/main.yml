@@ -2,7 +2,7 @@
 # Prometheus version
 prometheus_version: "2.53.3"
 node_exporter_version: "1.8.2"
-dcgm_exporter_version: "4.0.0-4.0.1-ubuntu22.04"
+dcgm_exporter_version: "4.2.3-4.2.0-ubuntu22.04"
 
 # Grafana settings
 grafana_admin_password: "admin"  # Should be overridden in vault

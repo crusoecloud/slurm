@@ -36,6 +36,7 @@
     name: 
       - nvidia-container-toolkit
       - nvidia-container-runtime
+      - datacenter-gpu-manager-4-core
     state: present
     update_cache: true
     allow_change_held_packages: yes

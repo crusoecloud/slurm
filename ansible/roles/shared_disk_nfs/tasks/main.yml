@@ -1,0 +1,174 @@
+- name: Check if VAST NFS driver is already installed
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Check if mellanox_mlnx_ofed.list exists
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/mellanox_mlnx_ofed.list
+  register: mellanox_list_file
+
+- name: Add mellanox keyring
+  ansible.builtin.get_url:
+    url: "https://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox"
+    dest: "/usr/share/keyrings/mellanox.asc"
+  when: mellanox_list_file.stat.exists
+
+- name: Mellanox apt source
+  ansible.builtin.shell:
+    cmd: sed -i 's#deb http://linux.mellanox.com#deb [signed-by=/usr/share/keyrings/mellanox.asc] http://linux.mellanox.com#' /etc/apt/sources.list.d/mellanox_mlnx_ofed.list
+  when: mellanox_list_file.stat.exists
+
+- name: VAST NFS installation
+  when: ansible_facts.packages.keys() | select("match", "^vastnfs-") | list | length == 0
+  block:
+    - name: Update gcc compiler to 12
+      community.general.alternatives:
+        name: gcc
+        path: /usr/bin/gcc-12
+        link: /usr/bin/gcc
+        priority: 120
+        state: present
+
+    - name: Ensure source directory exists
+      file:
+        path: "{{ install_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Download vastnfs {{ vastnfs_version }} source tarball
+      get_url:
+        url: "https://vast-nfs.s3.amazonaws.com/version/{{ vastnfs_version }}/source/vastnfs-{{ vastnfs_version }}.tar.xz"
+        dest: "{{ install_dir }}/vastnfs-{{ vastnfs_version }}.tar.xz"
+        mode: '0644'
+      register: dl_vastnfs
+
+    - name: Extract vastnfs source
+      unarchive:
+        src: "{{ install_dir }}/vastnfs-{{ vastnfs_version }}.tar.xz"
+        dest: "{{ install_dir }}/"
+        remote_src: yes
+      when: dl_vastnfs.changed
+
+    - name: Build the .deb
+      command: bash -x ./build-deb.sh --no-ofed
+      args:
+        chdir: "{{ install_dir }}/vastnfs-{{ vastnfs_version }}"
+      register: build_output
+
+    - name: List files in dist directory
+      command: ls -l "{{ install_dir }}/vastnfs-{{ vastnfs_version }}/deb-dist"
+      register: dist_files
+
+    - name: Show dist directory listing
+      debug:
+        var: dist_files.stdout_lines
+
+    - name: Locate the built .deb
+      ansible.builtin.find:
+        paths: "{{ install_dir }}/vastnfs-{{ vastnfs_version }}/deb-dist"
+        patterns: "vastnfs*{{ vastnfs_version }}*.deb"
+        file_type: file
+      register: deb_file
+
+    - name: Debug deb_file
+      debug:
+        var: deb_file
+
+    - name: Assert that deb package was created
+      assert:
+        that:
+          - deb_file.matched > 0
+
+    - name: Install the vastnfs package
+      ansible.builtin.apt:
+        deb: "{{ (deb_file.files | default([]))[0].path }}"
+        state: present
+      when: deb_file.files | length > 0
+
+    - name: Remove the downloaded tarball
+      file:
+        path: "{{ install_dir }}/vastnfs-{{ vastnfs_version }}.tar.xz"
+        state: absent
+
+    - name: Remove the extracted source/build directory
+      file:
+        path: "{{ install_dir }}/vastnfs-{{ vastnfs_version }}"
+        state: absent
+
+    - name: Update initramfs
+      ansible.builtin.command: update-initramfs -u -k "$(uname -r)"
+      changed_when: false
+
+    - name: Reload VAST NFS driver
+      ansible.builtin.command: vastnfs-ctl reload
+      changed_when: false
+
+- name: Check if udev rule for read-ahead already exists
+  ansible.builtin.stat:
+    path: /etc/udev/rules.d/95-nfs-readahead.rules
+  register: udev_rule_stat
+
+- name: Create udev rule for NFS read-ahead cache
+  ansible.builtin.copy:
+    dest: /etc/udev/rules.d/95-nfs-readahead.rules
+    content: 'SUBSYSTEM=="bdi", ACTION=="add", PROGRAM="/bin/awk -v bdi=$kernel ''BEGIN{ret=1} {if ($4 == bdi) {ret=0}} END{exit ret}'' /proc/fs/nfsfs/volumes", ATTR{read_ahead_kb}="{{ read_ahead_kb_size }}"'
+    owner: root
+    group: root
+    mode: '0644'
+  when: not udev_rule_stat.stat.exists
+  notify: Reload udev rules
+
+- name: Ensure nfs.conf is configured for read-ahead
+  ansible.builtin.blockinfile:
+    path: /etc/nfs.conf
+    block: |
+      [nfsrahead]
+      nfs={{ read_ahead_kb_size }}
+      nfs4={{ read_ahead_kb_size }}
+    create: true
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure MTU is set under the 'alleths' configuration
+  ansible.builtin.lineinfile:
+    path: /etc/netplan/00-netplan.yaml
+    regexp: '^\s*mtu:'
+    line: '      mtu: 9000'
+    insertafter: '^\s*dhcp4: true'
+  notify: Restart netplan
+
+- name: Create the ring buffer configuration script
+  ansible.builtin.copy:
+    dest: "/usr/local/sbin/apply-ring-buffers.sh"
+    owner: root
+    group: root
+    mode: '0744'
+    content: |
+      #!/bin/sh
+      /sbin/ethtool -G {{ interface_name }} rx {{ rx_buffer_size }} tx {{ tx_buffer_size }}
+
+- name: Create the systemd service file
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/ring-buffers.service"
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Set persistent ring buffer sizes for {{ interface_name }}
+      After=network.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/sbin/apply-ring-buffers.sh
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Reload systemd
+
+- name: Enable and start the ring buffer service
+  ansible.builtin.systemd:
+    name: ring-buffers.service
+    state: started
+    enabled: yes

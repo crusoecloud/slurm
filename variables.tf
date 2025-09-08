@@ -119,9 +119,9 @@ variable "slurm_compute_node_reservation_id" {
 
 variable "slurm_users" {
   description = "Additional users"
-  type = list(object({
-    name = string
-    uid = number
+  type        = list(object({
+    name      = string
+    uid       = number
     ssh_pubkey = string
   }))
   default     = []
@@ -160,6 +160,10 @@ variable "slurm_shared_volumes" {
     mode        = string # "ready-only" | "read-write"
   }))
   default = []
+  validation {
+    condition     = !(var.use_vast_nfs && var.slurm_shared_volumes != null && length(var.slurm_shared_volumes) > 0)
+    error_message = "You cannot set both use_vast_nfs = true and provide slurm_shared_volumes at the same time."
+  }
 }
 
 variable "enable_observability" {
@@ -173,4 +177,46 @@ variable "grafana_admin_password" {
   type        = string
   default     = "admin"
   sensitive   = true
+}
+
+variable "use_vast_nfs" {
+  description = "Do not deploy the NFS node and instead use vast-nfs volumes for the slurm nodes"
+  type        = bool
+  default     = false
+}
+
+variable "slurm_data_disk_size" {
+  description = "The slurm data disk size."
+  type        = string
+  default     = "1024000GiB"
+}
+
+variable "slurm_shared_disk_nfs_home_size" {
+  description = "The slurm nfs home directory size."
+  type        = string
+  default     = "20480GiB"
+}
+
+variable "slurmctld_disk_size" {
+  description = "The slurmctld disk size. This is required to persist slurm cluster state"
+  type        = string
+  default     = "1024GiB"
+}
+
+variable "pre_existing_slurm_data_disk_id" {
+  description = "Use a pre-existing Slurm VAST data disk"
+  type        = string
+  default     = null
+}
+
+variable "slurm_data_disk_mount_path" {
+  description = "This is the training/checkpoint disk mount path"
+  type        = string
+  default     = "/data"
+}
+
+variable "vastnfs_version"{
+  description = "The VAST NFS driver version"
+  type        = string
+  default     = "4.0.35"
 }
