@@ -44,4 +44,4 @@
     opts: rw,nofail
     state: mounted
     fstype: virtiofs
-  loop: "{{ volumes }}"
+  loop: "{{ volumes | from_json }}"
