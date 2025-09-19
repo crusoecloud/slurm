@@ -1,5 +1,10 @@
 variable "ssh_public_key_path" {
-  description = "The ssh public key authorized to login to the cluster."
+  description = "The ssh public key authorized to login to the login node."
+  type        = string
+}
+
+variable "ssh_private_key_path" {
+  description = "The ssh private key authorized to login to the login node."
   type        = string
 }
 
@@ -11,12 +16,6 @@ variable "location" {
 variable "project_id" {
   description = "The project in which to create the cluster."
   type        = string
-}
-
-variable "vpc_subnet_id" {
-  description = "The vpc subnet id."
-  type        = string
-  default     = null
 }
 
 variable "slurm_head_node_count" {
@@ -108,7 +107,6 @@ variable "slurm_compute_node_count" {
 variable "slurm_compute_node_ib_partition_id" {
   description = "The ib partition in which to create the compute nodes."
   type        = string
-  default     = null
 }
 
 variable "slurm_compute_node_reservation_id" {
