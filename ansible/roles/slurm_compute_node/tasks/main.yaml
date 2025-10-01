@@ -30,6 +30,12 @@
     group: root
     mode: '0755'
 
+- name: Create symbolic link for NVML library
+  ansible.builtin.file:
+    src: /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1
+    dest: /usr/lib/x86_64-linux-gnu/libnvidia-ml.so
+    state: link
+
 - name: Restart slurmd
   ansible.builtin.systemd_service:
     name: slurmd
