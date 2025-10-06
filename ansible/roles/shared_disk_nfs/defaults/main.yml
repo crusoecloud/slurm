@@ -8,3 +8,7 @@ read_ahead_kb_size: 16384
 interface_name: "{{ ansible_default_ipv4.interface }}"
 rx_buffer_size: 8192
 tx_buffer_size: 8192
+
+#GB200 support
+vastnfs_new_kernels: "4.5.0-rc3"
+vastnfs_old_kernels: "4.0.35"

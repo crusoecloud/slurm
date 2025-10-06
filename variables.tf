@@ -220,3 +220,9 @@ variable "vastnfs_version"{
   type        = string
   default     = "4.0.35"
 }
+
+variable "enable_imex_support" {
+  description = "If true, a file with the list of all compute node IPs will be created for use with imex"
+  type        = bool
+  default     = false
+}

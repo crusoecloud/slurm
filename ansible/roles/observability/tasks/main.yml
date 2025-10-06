@@ -132,11 +132,15 @@
         state: present
         update_cache: true
 
+    - name: Check for existing services
+      ansible.builtin.service_facts:
+
     - name: Disable legacy dcgm-exporter service
       ansible.builtin.systemd:
         name: dcgm-exporter
         enabled: false
         state: stopped
+      when: "'dcgm-exporter.service' in services"
 
     - name: Ensure Docker service is running
       systemd:

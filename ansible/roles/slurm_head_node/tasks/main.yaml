@@ -17,7 +17,7 @@
       {{
         "rw,sync,soft"
         if not (use_vast_nfs | default(false) | bool)
-        else "vers=3,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
+        else "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
       }}
     state: mounted
     fstype: nfs

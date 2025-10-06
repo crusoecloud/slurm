@@ -22,14 +22,13 @@
     group: "{{ user_name }}"
     mode: "0755"
   delegate_to: >-
-    {{ 'slurm-login-node-0' if (use_vast_nfs | bool) and ('slurm_nfs_nodes' not in group_names) else inventory_hostname }}
+    {{ 'slurm-login-node-0' if use_vast_nfs | bool else groups['slurm_nfs_nodes'][0] }}
   run_once: true
 
 - name: "Add authorized key for {{ user_name }}"
   ansible.builtin.authorized_key:
     user: "{{ user_name }}"
     key: "{{ user_ssh_pubkey }}"
-  when: "'slurm_nfs_nodes' in group_names or (use_vast_nfs | bool)"
   delegate_to: >-
-    {{ 'slurm-login-node-0' if (use_vast_nfs | bool) and ('slurm_nfs_nodes' not in group_names) else inventory_hostname }}
+    {{ 'slurm-login-node-0' if use_vast_nfs | bool else groups['slurm_nfs_nodes'][0] }}
   run_once: true

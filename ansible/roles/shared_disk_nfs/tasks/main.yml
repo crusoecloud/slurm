@@ -21,6 +21,10 @@
 - name: VAST NFS installation
   when: ansible_facts.packages.keys() | select("match", "^vastnfs-") | list | length == 0
   block:
+    - name: Set vastnfs_version based on kernel versions
+      ansible.builtin.set_fact:
+        vastnfs_version: "{{ (ansible_kernel is version('6.8', '>=')) | ternary(vastnfs_new_kernels, vastnfs_old_kernels) }}"
+        
     - name: Update gcc compiler to 12
       community.general.alternatives:
         name: gcc
@@ -66,7 +70,7 @@
     - name: Locate the built .deb
       ansible.builtin.find:
         paths: "{{ install_dir }}/vastnfs-{{ vastnfs_version }}/deb-dist"
-        patterns: "vastnfs*{{ vastnfs_version }}*.deb"
+        patterns: "vastnfs*{{ vastnfs_version | replace('-', '.')}}*.deb"
         file_type: file
       register: deb_file
 

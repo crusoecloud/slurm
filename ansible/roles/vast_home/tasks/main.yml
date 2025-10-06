@@ -12,7 +12,7 @@
   ansible.posix.mount:
     src: "100.64.0.2:/volumes/{{ slurm_nfs_home_disk_id }}"
     path: /mnt/home
-    opts: vers=3,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17
+    opts: proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17
     fstype: nfs
     state: mounted
   when: 
@@ -41,7 +41,7 @@
   ansible.posix.mount:
     src: "100.64.0.2:/volumes/{{ slurm_nfs_home_disk_id }}"
     path: /home
-    opts: vers=3,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17
+    opts: proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17
     state: mounted
     fstype: nfs
   when: use_vast_nfs | default(false) | bool

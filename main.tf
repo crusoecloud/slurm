@@ -71,6 +71,11 @@ resource "crusoe_compute_instance" "slurm_head_node" {
   }] : []
 }
 
+output "slurm_head_nodes_addr" {
+  description = "Head node(s)"
+  value = crusoe_compute_instance.slurm_head_node[*].network_interfaces[0].public_ipv4.address
+}
+
 resource "crusoe_compute_instance" "slurm_login_node" {
   count      = var.slurm_login_node_count
   name       = "slurm-login-node-${count.index}"
@@ -109,6 +114,11 @@ resource "crusoe_compute_instance" "slurm_login_node" {
     mode            = v.mode
     attachment_type = "data"
   }]
+}
+
+output "slurm_login_nodes_addr" {
+  description = "Login node(s)"
+  value = crusoe_compute_instance.slurm_login_node[*].network_interfaces[0].public_ipv4.address
 }
 
 resource "crusoe_storage_disk" "slurm_nfs_home" {
@@ -189,6 +199,20 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
   }]
 }
 
+resource "local_file" "node_hostfile" {
+  count = var.enable_imex_support ? 1 : 0
+  content = templatefile("${path.module}/nodes.tpl", {
+    ips = crusoe_compute_instance.slurm_compute_node[*].network_interfaces[0].private_ipv4.address
+    
+  })
+  filename = "${path.module}/imex_nodes.txt"
+}
+
+output "slurm_compute_nodes_addr" {
+  description = "Compute node(s)"
+  value = crusoe_compute_instance.slurm_compute_node[*].network_interfaces[0].public_ipv4.address
+}
+
 resource "ansible_host" "slurm_nfs_node_host" {
   for_each = {
     for n in crusoe_compute_instance.slurm_nfs_node : n.name => n
@@ -227,7 +251,6 @@ resource "ansible_host" "slurm_login_node_host" {
   for_each = {
     for n in crusoe_compute_instance.slurm_login_node : n.name => n
   }
-
   name      = each.value.name
   groups    = [
     "slurm_compute_nodes",
@@ -246,7 +269,6 @@ resource "ansible_host" "slurm_compute_node_host" {
   for_each = {
     for n in crusoe_compute_instance.slurm_compute_node : n.name => n
   }
-
   name      = each.value.name
   groups    = [
     "slurm_compute_nodes",
@@ -274,6 +296,7 @@ resource "ansible_group" "all" {
     slurm_nfs_home_disk_id = try(crusoe_storage_disk.slurm_nfs_home_disk[0].id, null)
     slurmctld_disk_id = try(crusoe_storage_disk.slurmctld_disk[0].id, null)
     slurm_data_disk_mount_path = var.slurm_data_disk_mount_path
+    use_imex = var.enable_imex_support
   }
 }
 
