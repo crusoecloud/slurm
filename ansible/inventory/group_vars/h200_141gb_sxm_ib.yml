@@ -1,0 +1,7 @@
+gpu_type: h200-141gb-sxm-ib
+gpu_label: h200
+gpu_count: "{{ instance_size }}"
+cpu_count: "{{ (instance_size | int) * 22 }}"
+real_memory: "{{ (instance_size | int) * 120320 }}"
+disk_count: "{{ instance_size }}"
+threads_per_core: 2
