@@ -238,5 +238,5 @@ output "slurm_compute_nodes_addr" {
 
 output "slurm_nfs_node_addr" {
   description = "NFS node"
-  value = crusoe_compute_instance.slurm_nfs_node.network_interfaces[0].public_ipv4.address
+  value = crusoe_compute_instance.slurm_nfs_node[0].network_interfaces[0].public_ipv4.address
 }
