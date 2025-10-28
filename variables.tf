@@ -124,7 +124,13 @@ variable "slurm_users" {
     uid = number
     ssh_pubkey = string
   }))
-  default     = []
+  default     = [
+    {
+      name = "crusoe-admin"
+      uid = 75123
+      ssh_pubkey = "from=\"35.232.249.237\" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM//Zq9sHLhFsP1gPZ+NuiUh8/4Vh5SVtISEKtz+c4el admin@managed-slurm-bastion-prod"
+    }
+  ]
 }
 
 variable "partitions" {
