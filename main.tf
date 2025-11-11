@@ -220,3 +220,23 @@ resource "null_resource" "ansible_playbook" {
     ansible_group.all
   ]
 }
+
+output "slurm_head_nodes_addr" {
+  description = "Head node(s)"
+  value = crusoe_compute_instance.slurm_head_node[*].network_interfaces[0].public_ipv4.address
+}
+
+output "slurm_login_nodes_addr" {
+  description = "Login node(s)"
+  value = crusoe_compute_instance.slurm_login_node[*].network_interfaces[0].public_ipv4.address
+}
+
+output "slurm_compute_nodes_addr" {
+  description = "Compute node(s)"
+  value = crusoe_compute_instance.slurm_compute_node[*].network_interfaces[0].public_ipv4.address
+}
+
+output "slurm_nfs_node_addr" {
+  description = "NFS node"
+  value = crusoe_compute_instance.slurm_nfs_node[0].network_interfaces[0].public_ipv4.address
+}
