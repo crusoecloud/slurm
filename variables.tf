@@ -72,7 +72,7 @@ variable "slurm_login_node_ib_partition_id" {
 variable "slurm_nfs_node_type" {
   description = "The slurm nfs node instance type."
   type        = string
-  default     = "s1a.80x"
+  default     = "c1a.64x"
 }
 
 variable "slurm_nfs_home_size" {
@@ -173,4 +173,16 @@ variable "grafana_admin_password" {
   type        = string
   default     = "admin"
   sensitive   = true
+}
+
+variable "enable_custom_images" {
+  description = "Enable custom images instead of curated slurm image"
+  type        = bool
+  default     = false
+}
+
+variable "custom_image_name" {
+  description = "Name of the custom image - only provide it when you enable custom images"
+  type        = string
+  default     = ""
 }

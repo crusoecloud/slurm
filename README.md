@@ -80,6 +80,20 @@ slurm_shared_volumes = [{
 }]
 ```
 
+## Using Custom Images
+By default, all slurm nodes in the solution uses `ubuntu22.04-nvidia-slurm:latest`, which is a slurm VM image provided by Crusoe. To use your own custom image (such as one you build using our [Custom Slurm Image Generation](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image)), ensure that you enable custom image in `terraform.tfvars` and provide the name of the custom image in your Crusoe Cloud account:
+
+```
+# terraform.tfvars file
+... # other configurations
+
+enable_custom_images = true
+custom_image_name = "your-custom-slurm-image:tag"
+
+```
+
+This will override the default setting and use custom images for the nodes.
+
 ## User Management
 To add additional users to your cluster, configure the `slurm_users` variable in your
 `terraform.tfvars` file and run `terraform apply`. The following example adds three
