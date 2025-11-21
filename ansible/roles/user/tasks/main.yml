@@ -14,6 +14,15 @@
     create_home: false
     state: present
 
+- name: "Grant {{ user_name }} passwordless sudo access"
+  ansible.builtin.lineinfile:
+    path: "/etc/sudoers.d/{{ user_name }}"
+    state: present
+    create: yes
+    mode: "0440"
+    line: "{{ user_name }} ALL=(ALL) NOPASSWD: ALL"
+    validate: /usr/sbin/visudo -csf %s
+
 - name: "Create home directory for {{ user_name }} on login node"
   ansible.builtin.file:
     path: "/home/{{ user_name }}"
