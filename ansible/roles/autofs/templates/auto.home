@@ -1,3 +1,0 @@
-# autofs parameters
-* -soft,rsize=1048576,wsize=1048576,ac,actimeo=3,noatime,nodiratime,vers=4.2,proto=tcp slurm-nfs-node-0:/home/&
-
