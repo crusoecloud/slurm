@@ -27,7 +27,6 @@ By default, this solution will create a high-availability SLURM cluster with:
 - NVIDIA A100 (`a100-80gb-sxm-ib.8x`)
 
 ## Storage
-
 This solution currently supports three tiers of storage:
 
 ### Local Scratch
@@ -48,7 +47,6 @@ The `slurm_shared_disk_nfs_home_size` variable can optionally be set in the `ter
 ***Note:*** The lifecycle of the shared home directory is tied to the lifecycle of the cluster. Deleting the cluster will delete the shared home directory. 
 
 ### Shared Data Directory
-
 You can also create a Shared Data directory called `slurm-data-disk`, also mounted to all the login nodes and all compute nodes via NFS. It also uses Shared Disk. You can set the size of the disk using `slurm_data_disk_size`, or let it default to 1000TiB. The disk will mount, by default, to `/data`.
 
 If you have an existing Shared Disk you want to use as Shared Data directory, provide its disk ID using the `pre_existing_slurm_data_disk_id` variable. (This will ignore any new shared data directory variables such as `slurm_data_disk_size` from above) This is the recommended way to add high-performance persistent file storage to your cluster, if you want to persist data outside the lifecycle of the slurm cluster.
@@ -86,7 +84,6 @@ srun --container-image=<image> <cmd>
 
 
 ### MPI
-
 *Note*: PMIx is currently not supported on GB200.
 
 This solution includes PMIx support for running Open MPI applications.
@@ -106,8 +103,20 @@ export NCCL_IBEXT_DISABLE=1
 srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --cpus-per-task=22 --mpi=pmix /opt/nccl-tests/build/all_reduce_perf -b 1M -e 1G -f 2 -g 1
 ```
 
-### Observability
+##  Custom Images
+By default, all slurm nodes in the solution uses `ubuntu22.04-nvidia-slurm:latest`, which is a slurm VM image provided by Crusoe. To use your own custom image (such as one you build using our [Custom Slurm Image Generation](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image)), ensure that you provide the custom image names for any of the nodes (compute, head or login) in `terraform.tfvars`:
 
+```
+# terraform.tfvars file
+... # other configurations
+compute_node_custom_image_name = "your-custom-compute-node-image:tag"
+head_node_custom_image_name = "your-custom-head-node-image:tag"
+login_node_custom_image_name = "your-custom-login-node-image:tag"
+```
+
+This will override the default setting and use custom images for the nodes.
+
+### Observability
 The slurm solution comes pre-packaged with dashbords displaying VM utilization metrics such as CPU usage, and GPU metrics based off of `dcgm-exporter`. You will only get observability if you set the `enable_observability` variable to true. You can set the `grafana_admin_password` variable, but if you don't, it will default to `admin`. The solution will also add a firewall rule to ensure you can access the dashboard.
 
 The dashboard will be exposed from the headnode as a server using port 3000. Simply type in the following in your browser to access the dashboard:
@@ -115,7 +124,6 @@ The dashboard will be exposed from the headnode as a server using port 3000. Sim
 `https://<Head Node IP>:3000`
 
 ### GB200 Support
-
 The slurm solution provides GB200 NVL72 support via configuration of IMEX and Slurm native Block Topology. 
 
 IMEX can be enabled via the variable `enable_imex_support` (set to true). 
@@ -124,7 +132,7 @@ In order the configure Block Topology, you will need to do the following:
 
 1. Generate a JSON file that lists all of your running GB200 VMs in your Crusoe Project: `crusoe compute vms list --types gb200-186gb-nvl-ib.4x --states STATE_RUNNING -f json > slurm.json`
 2. Create the tpology configuration file (topology.conf) by running the python file in this directory: `python3 topology.py slurm.json`
-3. SSH into the Head Node, and un-comment this line in `/etc/slurm.conf`: `TopologyPlugin=topology/block`
+3. SSH into the Head Node, and un-comment this line in `/etc/slurm/slurm.conf`: `TopologyPlugin=topology/block`
 4. Copy the topology.conf file generated in step 1 under `/etc/slurm/topology.conf`
 5. Reconfigure your slurm cluster: `sudo -i scontrol reconfigure`
 6. Verify the topology: `scontrol show topology`. This will show the block topology definition similar to the following:
