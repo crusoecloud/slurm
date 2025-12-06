@@ -4,7 +4,6 @@
       - nvme-cli
       - mdadm
       - nfs-common
-      - autofs
       - autotools-dev
       - debhelper
       - dpkg-dev
@@ -40,12 +39,10 @@
 - name: Re-gather facts to find the new custom fact
   ansible.builtin.setup:
 
-- name: Configure nfs-client if using VAST NFS
+- name: Configure nfs-client
   ansible.builtin.import_role:
     name: shared_disk_nfs
-  when: use_vast_nfs | default(false) | bool
 
-- name: Configure nfs-client if using VAST NFS
+- name: Configure VAST home directory
   ansible.builtin.import_role:
     name: vast_home
-  when: use_vast_nfs | default(false) | bool

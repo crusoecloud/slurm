@@ -1,24 +1,8 @@
-- name: Configure autofs
-  ansible.builtin.import_role:
-    name: autofs
-  when:
-    - not use_vast_nfs | default(false) | bool
-    
 - name: Mount /var/spool/slurmctld
   ansible.posix.mount:
-    src: >-
-      {{
-        "slurm-nfs-node-0:/var/spool/slurmctld"
-        if not (use_vast_nfs | default(false) | bool)
-        else "100.64.0.2:/volumes/" ~ slurmctld_disk_id
-      }}
+    src: "100.64.0.2:/volumes/{{ slurmctld_disk_id }}"
     path: /var/spool/slurmctld
-    opts: >-
-      {{
-        "rw,sync,soft"
-        if not (use_vast_nfs | default(false) | bool)
-        else "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
-      }}
+    opts: "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
     state: mounted
     fstype: nfs
 

@@ -2,9 +2,7 @@
   debug: msg="/home is mounted"
   with_items: "{{ ansible_mounts }}"
   register: home_mount_exists
-  when:
-    - use_vast_nfs | default(false) | bool
-    - item.mount == "/home"
+  when: item.mount == "/home"
   delegate_to: slurm-login-node-0
   run_once: true
 
@@ -12,20 +10,16 @@
   ansible.posix.mount:
     src: "100.64.0.2:/volumes/{{ slurm_nfs_home_disk_id }}"
     path: /mnt/home
-    opts: proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17
+    opts: "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
     fstype: nfs
     state: mounted
-  when: 
-    - home_mount_exists is skipped
-    - use_vast_nfs | default(false) | bool
+  when: home_mount_exists is skipped
   delegate_to: slurm-login-node-0
   run_once: true
 
 - name: Copy /home to /mnt/home
   command: "rsync -a /home/ /mnt/home"
-  when: 
-    - home_mount_exists is skipped
-    - use_vast_nfs | default(false) | bool
+  when: home_mount_exists is skipped
   delegate_to: slurm-login-node-0
   run_once: true
 
@@ -33,7 +27,6 @@
   ansible.posix.mount:
     path: /mnt/home
     state: unmounted
-  when: use_vast_nfs | default(false) | bool
   delegate_to: slurm-login-node-0
   run_once: true
 
@@ -41,7 +34,6 @@
   ansible.posix.mount:
     src: "100.64.0.2:/volumes/{{ slurm_nfs_home_disk_id }}"
     path: /home
-    opts: proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17
+    opts: "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
     state: mounted
     fstype: nfs
-  when: use_vast_nfs | default(false) | bool

@@ -6,13 +6,6 @@
     - pre_tasks
     - hostname
 
-- name: Configure NFS nodes
-  hosts: slurm_nfs_nodes
-  remote_user: ubuntu
-  become: true
-  roles:
-    - slurm_nfs_node
-
 - name: Configure head nodes
   hosts: slurm_head_nodes
   remote_user: ubuntu
