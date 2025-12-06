@@ -69,31 +69,6 @@ variable "slurm_login_node_ib_partition_id" {
   default     = null
 }
 
-variable "slurm_nfs_node_type" {
-  description = "The slurm nfs node instance type."
-  type        = string
-  default     = "s1a.80x"
-}
-
-variable "slurm_nfs_home_size" {
-  description = "The slurm nfs host size."
-  type        = string
-  default     = "10240GiB"
-}
-
-# This is only required when using an infiniband enabled instance type for the nfs node.
-variable "slurm_nfs_node_ib_partition_id" {
-  description = "The ib partition in which to create the nfs node."
-  type        = string
-  default     = null
-}
-
-variable "slurm_nfs_node_reservation_id" {
-  description = "The slurm nfs node reservation id"
-  type        = string
-  default     = null
-}
-
 variable "slurm_compute_node_type" {
   description = "The slurm compute node instance type."
   type        = string
@@ -151,21 +126,6 @@ variable "partitions" {
   ]
 }
 
-variable "slurm_shared_volumes" {
-  description = "The shared volume mounts"
-  type = list(object({
-    id          = string
-    name        = string
-    mount_point = string 
-    mode        = string # "ready-only" | "read-write"
-  }))
-  default = []
-  validation {
-    condition     = !(var.use_vast_nfs && var.slurm_shared_volumes != null && length(var.slurm_shared_volumes) > 0)
-    error_message = "You cannot set both use_vast_nfs = true and provide slurm_shared_volumes at the same time."
-  }
-}
-
 variable "enable_observability" {
   description = "Enable observability stack (Prometheus, Grafana, GPU monitoring)"
   type        = bool
@@ -177,12 +137,6 @@ variable "grafana_admin_password" {
   type        = string
   default     = "admin"
   sensitive   = true
-}
-
-variable "use_vast_nfs" {
-  description = "Do not deploy the NFS node and instead use vast-nfs volumes for the slurm nodes"
-  type        = bool
-  default     = false
 }
 
 variable "slurm_data_disk_size" {
