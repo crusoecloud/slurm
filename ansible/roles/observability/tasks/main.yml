@@ -115,10 +115,10 @@
 
 # Compute node specific tasks
 - name: Setup NVIDIA monitoring on GPU nodes
-  when: 
+  when:
     - inventory_hostname in groups['slurm_compute_nodes']
     - instance_type is defined
-    - (gpu_instance_types | join('|')) is search(instance_type.split('.')[0])
+    - instance_type.split('.')[0] is regex('^(' + (gpu_instance_types | join('|')) + ')')
   block:
     - name: Install Docker and dependencies
       apt:

@@ -1,0 +1,19 @@
+[Unit]
+Description=nvitop-exporter for Prometheus
+Documentation=https://github.com/XuehaiPan/nvitop
+After=network.target
+
+[Service]
+# IMPORTANT: Change 'your_user' to the username that should run the service.
+# This user needs to have pipx installed and configured.
+User=ubuntu
+
+# IMPORTANT: Use the full path to pipx, which you can find by running: which pipx
+# Example: /home/your_user/.local/bin/pipx or /usr/bin/pipx
+ExecStart=nvitop-exporter --bind-address 0.0.0.0 --port 5050
+
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
