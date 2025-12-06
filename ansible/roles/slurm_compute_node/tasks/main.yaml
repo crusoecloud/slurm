@@ -1,35 +1,38 @@
-- name: Configure autofs
-  ansible.builtin.import_role:
-    name: autofs
-  when:
-    - not use_vast_nfs | default(false) | bool
-    
 - name: Mount /scratch/local
   ansible.builtin.import_role:
     name: raid0
   vars:
     raid0_mount_path: /scratch/local
-  when: (ansible_local.nvme.nvme.count | int) > 0 
+  when: (ansible_local.nvme.nvme.count | int) > 0
 
-- name: Mount /scratch/shared
-  ansible.posix.mount:
-    src: "slurm-nfs-node-0:/scratch/shared"
-    path: /scratch/shared
-    opts: rw,sync,soft
-    state: mounted
-    fstype: nfs
-  when:
-    - not use_vast_nfs | default(false) | bool
-    - (hostvars['slurm-nfs-node-0'].ansible_local.nvme.nvme.count | int) > 0
+- name: Ensure Enroot configuration directory exists
+  ansible.builtin.file:
+    path: /etc/enroot/enroot.conf.d
+    state: directory
+    mode: '0755'
 
+- name: Install enroot-99-paths.conf
+  ansible.builtin.template:
+    src: 99-paths.conf
+    dest: /etc/enroot/enroot.conf.d/99-paths.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create Enroot scratch directory with recursive 777 permissions
+  ansible.builtin.file:
+    path: /scratch/local/enroot
+    state: directory
+    mode: '0777'
+  when: (ansible_local.nvme.nvme.count | int) > 0
+    
 - name: Mount vastnfs slurm_data_disk
   ansible.posix.mount:
     src: "100.64.0.2:/volumes/{{ slurm_data_disk_id | default(crusoe_storage_disk.slurm_data_disk[0].id) }}"
     path: "{{ slurm_data_disk_mount_path }}"
-    opts: proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
+    opts: "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
     state: mounted
     fstype: nfs
-  when: use_vast_nfs | default(false) | bool
 
 - name: Install override.conf
   ansible.builtin.template:
@@ -38,6 +41,20 @@
     owner: root
     group: root
     mode: '0755'
+
+- name: Configure unprivileged user namespace and AppArmor restrictions for Pyxis
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/99-userns.conf
+    state: present
+    reload: true
+  loop:
+    - { key: 'kernel.unprivileged_userns_clone', value: '1' }
+    - { key: 'kernel.apparmor_restrict_unprivileged_userns', value: '0' }
+    - { key: 'kernel.apparmor_restrict_unprivileged_unconfined', value: '0' }
+  # Optional: Prevents failure on Ubuntu 22.04 if the kernel is too old to know these keys
+  ignore_errors: true
 
 - name: Create symbolic link for NVML library
   ansible.builtin.file:
@@ -51,15 +68,6 @@
     state: restarted
     enabled: true
     daemon_reload: true
-
-- name: Mount all volumes
-  ansible.posix.mount:
-    src: "{{ item.name }}"
-    path: "{{ item.mount_point }}"
-    opts: rw,nofail
-    state: mounted
-    fstype: virtiofs
-  loop: "{{ volumes | from_json }}"
 
 - name: IMEX Support
   when: 
