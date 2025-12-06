@@ -103,7 +103,7 @@ export NCCL_IBEXT_DISABLE=1
 srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --cpus-per-task=22 --mpi=pmix /opt/nccl-tests/build/all_reduce_perf -b 1M -e 1G -f 2 -g 1
 ```
 
-##  Custom Images
+### Custom Images
 By default, all slurm nodes in the solution uses `ubuntu22.04-nvidia-slurm:latest`, which is a slurm VM image provided by Crusoe. To use your own custom image (such as one you build using our [Custom Slurm Image Generation](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image)), ensure that you provide the custom image names for any of the nodes (compute, head or login) in `terraform.tfvars`:
 
 ```
