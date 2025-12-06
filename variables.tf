@@ -180,3 +180,21 @@ variable "enable_imex_support" {
   type        = bool
   default     = false
 }
+
+variable "compute_node_custom_image_name" {
+  description = "name:tag of your Custom Image for Compute Nodes"
+  type        = string
+  default     = null
+} 
+
+variable "head_node_custom_image_name" {
+  description = "name:tag of your Custom Image for Head Nodes"
+  type        = string
+  default     = null
+} 
+
+variable "login_node_custom_image_name" {
+  description = "name:tag of your Custom Image for Login Nodes"
+  type        = string
+  default     = null
+} 
