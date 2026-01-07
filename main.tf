@@ -142,6 +142,7 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
 }
 
 resource "crusoe_vpc_firewall_rule" "allow_grafana_access" {
+  count             = var.enable_observability ? 1 : 0 
   action            = "allow"
   destination       = crusoe_compute_instance.slurm_head_node[0].network_interfaces[0].private_ipv4.address
   destination_ports = "3000"
