@@ -41,8 +41,10 @@
     update_cache: true
     allow_change_held_packages: yes
 
-- name: Configure nvidia-container-runtime
-  shell: nvidia-ctk runtime configure --runtime=docker
+- name: Configure nvidia-container-runtime to use legacy mode
+  shell: |
+    nvidia-ctk config --set nvidia-container-runtime.mode=legacy --in-place
+    nvidia-ctk runtime configure --runtime=docker
   notify: restart docker
 
 - name: Create Docker daemon.json
@@ -66,3 +68,8 @@
     name: docker
     state: restarted
   when: docker_config.changed 
+
+- name: Restart nvidia-dcgm hostengine
+  systemd:
+    name: nvidia-dcgm
+    state: restarted
