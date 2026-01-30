@@ -69,14 +69,58 @@
     enabled: true
     daemon_reload: true
 
-- name: IMEX Support
-  when: 
-    - use_imex | default(false) |  bool
-    - "'login' not in slurm_features | from_json"
+- name: IMEX Support for Partition1
+  when:
+    - partition1_use_imex | default(false) | bool
+    - "'partition1' in slurm_features | from_json"
   block:
-  - name: Copy the hostfile to each node
+  - name: Copy the partition1 hostfile to each node
     ansible.builtin.copy:
-      src: ../../../imex_nodes.txt
+      src: ../../../imex_nodes_partition1.txt
+      dest: /etc/nvidia-imex/nodes_config.cfg
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Discover IMEX major number
+    command: grep nvidia-caps-imex-channels /proc/devices
+    register: imex_device
+
+  - name: Create IMEX channel directory and node as root
+    become: true
+    block:
+      - name: Ensure IMEX channel directory exists
+        file:
+          path: /dev/nvidia-caps-imex-channels
+          state: directory
+          mode: '0755'
+
+      - name: Create channel0 device node
+        command: mknod /dev/nvidia-caps-imex-channels/channel0 c {{ imex_device.stdout.split()[0] }} 0
+        args:
+          creates: /dev/nvidia-caps-imex-channels/channel0
+
+  - name: Stop nvidia-imex service
+    become: true
+    ansible.builtin.systemd:
+      name: nvidia-imex
+      state: stopped
+
+  - name: Start nvidia-imex service
+    become: true
+    ansible.builtin.systemd:
+      name: nvidia-imex
+      state: started
+      enabled: yes
+
+- name: IMEX Support for Partition2
+  when:
+    - partition2_use_imex | default(false) | bool
+    - "'partition2' in slurm_features | from_json"
+  block:
+  - name: Copy the partition2 hostfile to each node
+    ansible.builtin.copy:
+      src: ../../../imex_nodes_partition2.txt
       dest: /etc/nvidia-imex/nodes_config.cfg
       owner: root
       group: root

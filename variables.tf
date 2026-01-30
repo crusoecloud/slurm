@@ -69,58 +69,113 @@ variable "slurm_login_node_ib_partition_id" {
   default     = null
 }
 
-variable "slurm_compute_node_type" {
-  description = "The slurm compute node instance type."
+variable "partition1_compute_node_type" {
+  description = "The partition1 compute node instance type."
   type        = string
 }
 
-variable "slurm_compute_node_count" {
-  description = "The number of slurm compute nodes."
+variable "partition1_compute_node_count" {
+  description = "The number of partition1 compute nodes."
   type        = number
 }
 
 # This is only required when using an infiniband enabled instance type for the compute nodes.
-variable "slurm_compute_node_ib_partition_id" {
-  description = "The ib partition in which to create the compute nodes."
+variable "partition1_compute_node_ib_partition_id" {
+  description = "The ib partition id for partition1 compute nodes."
   type        = string
   default     = null
 }
 
-variable "slurm_compute_node_reservation_id" {
-  description = "The slurm compute node reservation id"
+variable "partition1_compute_node_reservation_id" {
+  description = "The partition1 compute node reservation id"
   type        = string
   default     = null
+}
+
+variable "partition1_compute_node_custom_image_name" {
+  description = "name:tag of Custom Image for Partition1 Compute Nodes"
+  type        = string
+  default     = null
+}
+
+variable "partition1_enable_imex_support" {
+  description = "If true, create IMEX nodes file for partition1"
+  type        = bool
+  default     = false
+}
+
+variable "partition2_compute_node_type" {
+  description = "The partition2 compute node instance type."
+  type        = string
+}
+
+variable "partition2_compute_node_count" {
+  description = "The number of partition2 compute nodes."
+  type        = number
+}
+
+# This is only required when using an infiniband enabled instance type for the compute nodes.
+variable "partition2_compute_node_ib_partition_id" {
+  description = "The ib partition id for partition2 compute nodes."
+  type        = string
+  default     = null
+}
+
+variable "partition2_compute_node_reservation_id" {
+  description = "The partition2 compute node reservation id"
+  type        = string
+  default     = null
+}
+
+variable "partition2_compute_node_custom_image_name" {
+  description = "name:tag of Custom Image for Partition2 Compute Nodes"
+  type        = string
+  default     = null
+}
+
+variable "partition2_enable_imex_support" {
+  description = "If true, create IMEX nodes file for partition2"
+  type        = bool
+  default     = false
 }
 
 variable "slurm_users" {
   description = "Additional users"
-  type        = list(object({
-    name      = string
-    uid       = number
+  type = list(object({
+    name       = string
+    uid        = number
     ssh_pubkey = string
   }))
-  default     = []
+  default = []
 }
 
 variable "partitions" {
   description = "Partition configuration"
   type = list(object({
-    name = string
+    name       = string
     extra_args = map(string)
   }))
   default = [
     {
-      name = "batch"
+      name = "partition1"
       extra_args = {
         "Default" = "YES",
         "MaxTime" = "INFINITE",
-        "State" = "UP",
+        "State"   = "UP",
       }
-    }, {
+    },
+    {
+      name = "partition2"
+      extra_args = {
+        "MaxTime" = "INFINITE",
+        "State"   = "UP",
+      }
+    },
+    {
       name = "login"
       extra_args = {
-        "State":  "INACTIVE",
-				"Hidden": "YES",
+        "State" : "INACTIVE",
+        "Hidden" : "YES",
       }
     }
   ]
@@ -169,32 +224,20 @@ variable "slurm_data_disk_mount_path" {
   default     = "/data"
 }
 
-variable "vastnfs_version"{
+variable "vastnfs_version" {
   description = "The VAST NFS driver version"
   type        = string
   default     = "4.0.35"
 }
 
-variable "enable_imex_support" {
-  description = "If true, a file with the list of all compute node IPs will be created for use with imex"
-  type        = bool
-  default     = false
-}
-
-variable "compute_node_custom_image_name" {
-  description = "name:tag of your Custom Image for Compute Nodes"
-  type        = string
-  default     = null
-} 
-
 variable "head_node_custom_image_name" {
   description = "name:tag of your Custom Image for Head Nodes"
   type        = string
   default     = null
-} 
+}
 
 variable "login_node_custom_image_name" {
   description = "name:tag of your Custom Image for Login Nodes"
   type        = string
   default     = null
-} 
+}
