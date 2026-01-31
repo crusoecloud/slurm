@@ -69,6 +69,12 @@ variable "slurm_login_node_ib_partition_id" {
   default     = null
 }
 
+ variable "partition1_name" {
+   description = "Partition 1 name."
+   type        = string
+   default     = "partition1"
+ }
+
 variable "partition1_compute_node_type" {
   description = "The partition1 compute node instance type."
   type        = string
@@ -103,6 +109,12 @@ variable "partition1_enable_imex_support" {
   type        = bool
   default     = false
 }
+
+ variable "partition2_name" {
+   description = "Partition 2 name."
+   type        = string
+   default     = "partition2"
+ }
 
 variable "partition2_compute_node_type" {
   description = "The partition2 compute node instance type."
