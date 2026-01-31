@@ -109,7 +109,7 @@ resource "crusoe_compute_instance" "slurm_login_node" {
 # Partition 1 Compute Nodes
 resource "crusoe_compute_instance" "slurm_compute_node_partition1" {
   count          = var.partition1_compute_node_count
-  name           = var.partition1_enable_imex_support ? "slurm-compute-node-partition1-${format("%03d", count.index)}" : "slurm-compute-node-partition1-${count.index}"
+  name           = var.partition1_enable_imex_support ? "${var.partition1_name}-compute-node-${format("%03d", count.index)}" : "${var.partition1_name}-compute-node-${count.index}"
   type           = var.partition1_compute_node_type
   ssh_key        = local.ssh_public_key
   location       = var.location
@@ -145,7 +145,7 @@ resource "crusoe_compute_instance" "slurm_compute_node_partition1" {
 # Partition 2 Compute Nodes
 resource "crusoe_compute_instance" "slurm_compute_node_partition2" {
   count          = var.partition2_compute_node_count
-  name           = var.partition2_enable_imex_support ? "slurm-compute-node-partition2-${format("%03d", count.index)}" : "slurm-compute-node-partition2-${count.index}"
+  name           = var.partition2_enable_imex_support ? "${var.partition2_name}-compute-node-${format("%03d", count.index)}" : "${var.partition2_name}-compute-node-${count.index}"
   type           = var.partition2_compute_node_type
   ssh_key        = local.ssh_public_key
   location       = var.location
