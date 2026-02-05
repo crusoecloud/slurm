@@ -69,86 +69,33 @@ variable "slurm_login_node_ib_partition_id" {
   default     = null
 }
 
- variable "partition1_name" {
-   description = "Partition 1 name."
-   type        = string
-   default     = "partition1"
- }
-
-variable "partition1_compute_node_type" {
-  description = "The partition1 compute node instance type."
-  type        = string
-}
-
-variable "partition1_compute_node_count" {
-  description = "The number of partition1 compute nodes."
-  type        = number
-}
-
-# This is only required when using an infiniband enabled instance type for the compute nodes.
-variable "partition1_compute_node_ib_partition_id" {
-  description = "The ib partition id for partition1 compute nodes."
-  type        = string
-  default     = null
-}
-
-variable "partition1_compute_node_reservation_id" {
-  description = "The partition1 compute node reservation id"
-  type        = string
-  default     = null
-}
-
-variable "partition1_compute_node_custom_image_name" {
-  description = "name:tag of Custom Image for Partition1 Compute Nodes"
-  type        = string
-  default     = null
-}
-
-variable "partition1_enable_imex_support" {
-  description = "If true, create IMEX nodes file for partition1"
-  type        = bool
-  default     = false
-}
-
- variable "partition2_name" {
-   description = "Partition 2 name."
-   type        = string
-   default     = "partition2"
- }
-
-variable "partition2_compute_node_type" {
-  description = "The partition2 compute node instance type."
-  type        = string
-}
-
-variable "partition2_compute_node_count" {
-  description = "The number of partition2 compute nodes."
-  type        = number
-}
-
-# This is only required when using an infiniband enabled instance type for the compute nodes.
-variable "partition2_compute_node_ib_partition_id" {
-  description = "The ib partition id for partition2 compute nodes."
-  type        = string
-  default     = null
-}
-
-variable "partition2_compute_node_reservation_id" {
-  description = "The partition2 compute node reservation id"
-  type        = string
-  default     = null
-}
-
-variable "partition2_compute_node_custom_image_name" {
-  description = "name:tag of Custom Image for Partition2 Compute Nodes"
-  type        = string
-  default     = null
-}
-
-variable "partition2_enable_imex_support" {
-  description = "If true, create IMEX nodes file for partition2"
-  type        = bool
-  default     = false
+variable "partitions" {
+  description = "Partition configuration"
+  type = list(object({
+    name       = string
+    count      = number
+    type       = string
+    imex_support = bool
+    custom_image = string
+    reservation_id = string
+    extra_args = map(string)
+  }))
+  default = [
+    {
+      name = "partition1"
+      count = 0
+      type = "b200-180gb-sxm-ib.8x"
+      imex_support = false
+      ib_partition_id = ""
+      custom_image = null
+      reservation_id = null
+      extra_args = {
+        "Default" = "YES",
+        "MaxTime" = "INFINITE",
+        "State"   = "UP",
+      }
+    }
+  ]
 }
 
 variable "slurm_users" {
@@ -159,38 +106,6 @@ variable "slurm_users" {
     ssh_pubkey = string
   }))
   default = []
-}
-
-variable "partitions" {
-  description = "Partition configuration"
-  type = list(object({
-    name       = string
-    extra_args = map(string)
-  }))
-  default = [
-    {
-      name = "partition1"
-      extra_args = {
-        "Default" = "YES",
-        "MaxTime" = "INFINITE",
-        "State"   = "UP",
-      }
-    },
-    {
-      name = "partition2"
-      extra_args = {
-        "MaxTime" = "INFINITE",
-        "State"   = "UP",
-      }
-    },
-    {
-      name = "login"
-      extra_args = {
-        "State" : "INACTIVE",
-        "Hidden" : "YES",
-      }
-    }
-  ]
 }
 
 variable "enable_observability" {
