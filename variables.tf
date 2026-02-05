@@ -76,6 +76,7 @@ variable "partitions" {
     count      = number
     type       = string
     imex_support = bool
+    ib_partition_id = string
     custom_image = string
     reservation_id = string
     extra_args = map(string)
@@ -86,7 +87,7 @@ variable "partitions" {
       count = 0
       type = "b200-180gb-sxm-ib.8x"
       imex_support = false
-      ib_partition_id = ""
+      ib_partition_id = null
       custom_image = null
       reservation_id = null
       extra_args = {

@@ -228,7 +228,7 @@ resource "ansible_host" "slurm_compute_node_host" {
   name = each.value.name
   groups = [
     "slurm_compute_nodes",
-    split("-", each.value.name)[0]+"_compute_nodes",
+    format("%s%s",split("-", each.value.name)[0],"_compute_nodes"),
     replace(split(".", each.value.type)[0], "-", "_"),
   ]
   variables = {
@@ -272,7 +272,7 @@ resource "null_resource" "ansible_playbook" {
   depends_on = [
     ansible_host.slurm_head_node_host,
     ansible_host.slurm_login_node_host,
-    ansible_host.slurm_compute_host,
+    ansible_host.slurm_compute_node_host,
     ansible_group.all
   ]
 }
@@ -289,5 +289,5 @@ output "slurm_login_nodes_addr" {
 
 output "slurm_compute_nodes_addr" {
   description = "Compute node(s)"
-  value       = crusoe_compute_instance.slurm_compute_node[*].network_interfaces[0].public_ipv4.address
+  value       = [for instance in crusoe_compute_instance.slurm_compute_node : instance.network_interfaces[0].public_ipv4.address]
 }
