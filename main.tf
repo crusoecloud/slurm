@@ -21,6 +21,7 @@ locals {
         partition_name  = group.name
         type = group.type
         ib_partition_id = group.ib_partition_id
+        image = group.image
         custom_image = group.custom_image
         reservation_id = group.reservation_id
         extra_args = group.extra_args
