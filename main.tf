@@ -40,7 +40,7 @@ resource "crusoe_storage_disk" "slurm_data_disk" {
 }
 
 resource "crusoe_storage_disk" "slurm_nfs_home_disk" {
-  count      = 1
+  count      = var.pre_existing_slurm_home_disk_id == null ? 1 : 0
   name       = "slurm-nfs-home-disk"
   size       = var.slurm_shared_disk_nfs_home_size
   location   = var.location
@@ -78,7 +78,10 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
   }]
   disks = [
     {
-      id              = crusoe_storage_disk.slurm_nfs_home_disk[0].id
+      id = coalesce(
+        var.pre_existing_slurm_home_disk_id,
+        try(crusoe_storage_disk.slurm_nfs_home_disk[0].id, null)
+      )
       mode            = "read-write"
       attachment_type = "data"
     },
@@ -116,11 +119,14 @@ resource "crusoe_compute_instance" "slurm_head_node" {
     id              = crusoe_storage_disk.slurmctld_disk[0].id
     mode            = "read-write"
     attachment_type = "data"
-    }, {
-    id              = crusoe_storage_disk.slurm_nfs_home_disk[0].id
+    },{    
+    id = coalesce(
+        var.pre_existing_slurm_home_disk_id,
+        try(crusoe_storage_disk.slurm_nfs_home_disk[0].id, null)
+    )
     mode            = "read-write"
     attachment_type = "data"
-  }]
+    }]
 }
 
 resource "crusoe_compute_instance" "slurm_login_node" {
@@ -143,7 +149,10 @@ resource "crusoe_compute_instance" "slurm_login_node" {
     }
   }]
   disks = [{
-    id              = crusoe_storage_disk.slurm_nfs_home_disk[0].id
+    id = coalesce(
+        var.pre_existing_slurm_home_disk_id,
+        try(crusoe_storage_disk.slurm_nfs_home_disk[0].id, null)
+    )
     mode            = "read-write"
     attachment_type = "data"
     },

@@ -143,6 +143,12 @@ variable "slurmctld_disk_size" {
   default     = "1024GiB"
 }
 
+variable "pre_existing_slurm_home_disk_id" {
+  description = "Use a pre-existing Slurm VAST data disk"
+  type        = string
+  default     = null
+}
+
 variable "pre_existing_slurm_data_disk_id" {
   description = "Use a pre-existing Slurm VAST data disk"
   type        = string
