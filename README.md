@@ -1,10 +1,11 @@
-# SLURM v2
+# SLURM v2-multiple-compute-partitions
 This repository is the simplest way to create a high-availability
 [SLURM](https://slurm.schedmd.com/quickstart.html) cluster on Crusoe Cloud.
 To get started, create a file named `terraform.tfvars` with the cluster
-parameters. For example `.tfvars` files, see the `examples` directory.
+parameters. Use examples/dual-compute-partitions-with-nfs.tfvars as your starting point. Populate project, location, SSH key, and vpc subnet variables. Create the partitions array according to your needs, then apply the terraform:
 ```
-terraform init
+terraform init --upgrade
+terraform plan
 terraform apply
 ```
 
@@ -12,12 +13,12 @@ terraform apply
 ![cluster architecture](docs/img/slurm_v2.png)
 
 By default, this solution will create a high-availability SLURM cluster with:
-* 2 `c1a.16x` head nodes
-* 2 `c1a.16x` login nodes
+* 2 `c1a.4x` head nodes
+* 2 `c1a.4x` login nodes
 * Crusoe NFS Shared Disk for shared home directory
 * Crusoe NFS Shared Disk for shared data directory (either new or importing an existing disk)
 * Crusoe NFS Shared Disk for persisting Slurm controller state 
-* n compute nodes of any instance type.
+* Any number of partitions of any number of compute instance types.
 
 ***Note:*** Currently the following Crusoe compute node instance types are supported: 
 - NVIDIA GB200 NVL72 (`gb200-186gb-nvl-ib.4x`,`gb200-186gb-nvl.4x`)
@@ -25,12 +26,13 @@ By default, this solution will create a high-availability SLURM cluster with:
 - NVIDIA H200 (`h200-144gb-sxm-ib.8x`)
 - NVIDIA H100 (`h100-80gb-sxm-ib.8x`)
 - NVIDIA A100 (`a100-80gb-sxm-ib.8x`)
+For GB200 and B200, create a custom image based on the latest official GB200 or B200 Crusoe Cloud image by following [these instructions](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image) and populate the 'custom_image' property of relevant partitions list element with the name and tag of your custom image. If custom_image is populated, it will override the value of the 'image' property for the compute nodes in that partition. 
 
 ## Storage
 This solution currently supports three tiers of storage:
 
 ### Local Scratch
-Each `slurm-compute-node` instance supports local scratch storage, and the size depends on the instance type. If present, scratch storage is located at `/scratch/local`.  The local scratch storage is erased whenever the compute node is stopped.
+Each compute node instance supports local scratch storage, and the size depends on the instance type. If present, scratch storage is located at `/scratch/local`.  The local scratch storage is erased whenever the compute node is stopped.
 
 The local scratch size on common compute node instance types are:
 * `gb200-186gb-nvl-ib.4x`,`gb200-186gb-nvl.4x`: 7.68TB
