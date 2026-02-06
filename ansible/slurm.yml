@@ -37,7 +37,7 @@
       vars:
         user_name: "{{ item.name }}"
         user_uid: "{{ item.uid }}"
-
+        user_is_sudoer: "{{ item.is_sudoer | default(false) }}"
         user_ssh_pubkey: "{{ item.ssh_pubkey }}"
       loop: "{{ slurm_users | from_json }}"
       when: slurm_users is defined

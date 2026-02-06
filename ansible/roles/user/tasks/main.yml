@@ -39,3 +39,9 @@
     key: "{{ user_ssh_pubkey }}"
   delegate_to: slurm-login-node-0
   run_once: true
+
+- name: "Remove {{ user_name }} sudo access if not sudoer"
+  ansible.builtin.file:
+    path: "/etc/sudoers.d/{{ user_name }}"
+    state: absent
+  when: not (user_is_sudoer | default(false) | bool)

@@ -107,6 +107,7 @@ variable "slurm_users" {
     name       = string
     uid        = number
     ssh_pubkey = string
+    is_sudoer  = optional(bool, false)
   }))
   default = []
 }
