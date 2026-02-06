@@ -77,6 +77,7 @@ variable "partitions" {
     type       = string
     imex_support = bool
     ib_partition_id = string
+    image = string
     custom_image = string
     reservation_id = string
     extra_args = map(string)
@@ -88,6 +89,7 @@ variable "partitions" {
       type = "b200-180gb-sxm-ib.8x"
       imex_support = false
       ib_partition_id = null
+      image = "ubuntu22.04-nvidia-slurm:latest"
       custom_image = null
       reservation_id = null
       extra_args = {

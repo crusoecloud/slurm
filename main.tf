@@ -63,7 +63,7 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
   ssh_key        = local.ssh_public_key
   location       = var.location
   project_id     = var.project_id
-  image          = each.value.custom_image != null ? null : "ubuntu22.04-nvidia-slurm:latest"
+  image          = each.value.custom_image != null ? null : each.value.image
   custom_image   = each.value.custom_image != null ? each.value.custom_image : null
   reservation_id = each.value.reservation_id
   host_channel_adapters = each.value.ib_partition_id != null ? [{
@@ -156,18 +156,18 @@ resource "crusoe_compute_instance" "slurm_login_node" {
   }]
 }
 
-#resource "crusoe_vpc_firewall_rule" "allow_grafana_access" {
-#  count             = var.enable_observability ? 1 : 0
-#  action            = "allow"
-#  destination       = crusoe_compute_instance.slurm_head_node[0].network_interfaces[0].private_ipv4.address
-#  destination_ports = "3000"
-#  direction         = "ingress"
-#  name              = "grafana-slurm-access"
-#  network           = crusoe_compute_instance.slurm_head_node[0].network_interfaces[0].network
-#  protocols         = "tcp"
-#  source            = "0.0.0.0/0"
-#  source_ports      = "1-65535"
-#}
+resource "crusoe_vpc_firewall_rule" "allow_grafana_access" {
+  count             = var.enable_observability ? 1 : 0
+  action            = "allow"
+  destination       = crusoe_compute_instance.slurm_head_node[0].network_interfaces[0].private_ipv4.address
+  destination_ports = "3000"
+  direction         = "ingress"
+  name              = "grafana-slurm-access"
+  network           = crusoe_compute_instance.slurm_head_node[0].network_interfaces[0].network
+  protocols         = "tcp"
+  source            = "0.0.0.0/0"
+  source_ports      = "1-65535"
+}
 
 # IMEX nodes files - one for each partition with IMEX enabled
 resource "local_file" "partition_node_hostfile" {
