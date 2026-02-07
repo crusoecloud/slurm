@@ -6,9 +6,9 @@
   delegate_to: slurm-login-node-0
   run_once: true
 
-- name: Mount slurm_nfs_home_disk to /mnt/home
+- name: Mount slurm_home_disk to /mnt/home
   ansible.posix.mount:
-    src: "100.64.0.2:/volumes/{{ slurm_nfs_home_disk_id }}"
+    src: "100.64.0.2:/volumes/{{ slurm_home_disk_id }}"
     path: /mnt/home
     opts: "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
     fstype: nfs
@@ -23,16 +23,16 @@
   delegate_to: slurm-login-node-0
   run_once: true
 
-- name: Unmount slurm_nfs_home_disk from /mnt/home
+- name: Unmount slurm_home_disk from /mnt/home
   ansible.posix.mount:
     path: /mnt/home
     state: unmounted
   delegate_to: slurm-login-node-0
   run_once: true
 
-- name: Mount vastnfs slurm_nfs_home_disk
+- name: Mount vastnfs slurm_home_disk
   ansible.posix.mount:
-    src: "100.64.0.2:/volumes/{{ slurm_nfs_home_disk_id }}"
+    src: "100.64.0.2:/volumes/{{ slurm_home_disk_id }}"
     path: /home
     opts: "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17"
     state: mounted

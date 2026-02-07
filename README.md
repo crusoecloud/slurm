@@ -42,9 +42,9 @@ The local scratch size on common compute node instance types are:
 * `a100-80gb-sxm-ib.8x`: 7.68TB
 
 ### Shared Home Directory
-The `slurm-nfs-home-disk` node exports a persistent `/home` directory that is mounted using NFS by all login nodes and all compute nodes. It uses the Crusoe [Shared Disk](https://docs.crusoecloud.com/storage/disks/managing-shared-disks/index.html) powered by VAST.
+The `slurm-home-disk` node exports a persistent `/home` directory that is mounted using NFS by all login nodes and all compute nodes. It uses the Crusoe [Shared Disk](https://docs.crusoecloud.com/storage/disks/managing-shared-disks/index.html) powered by VAST.
 
-The `slurm_shared_disk_nfs_home_size` variable can optionally be set in the `terraform.tfvars` file to configure the size of the `/home` nfs share. If left unconfigured, this will default to 20 TiB.
+The `slurm_shared_disk_home_size` variable can optionally be set in the `terraform.tfvars` file to configure the size of the `/home` nfs share. If left unconfigured, this will default to 20 TiB.
 
 ***Note:*** The lifecycle of the shared home directory is tied to the lifecycle of the cluster. Deleting the cluster will delete the shared home directory. 
 

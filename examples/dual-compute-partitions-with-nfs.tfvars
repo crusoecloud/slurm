@@ -23,7 +23,7 @@ grafana_admin_password = "<some secure password for your Grafana dashboard>"
 vastnfs_version = "4.0.35"
 
 # VAST NFS disk configuration
-slurm_shared_disk_nfs_home_size = "1TiB"
+slurm_home_disk_size = "1TiB"
 
 #slurm_data_disk_size = "2TiB"
 slurm_data_disk_mount_path = "/data"

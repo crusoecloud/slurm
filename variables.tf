@@ -131,8 +131,8 @@ variable "slurm_data_disk_size" {
   default     = "1024000GiB"
 }
 
-variable "slurm_shared_disk_nfs_home_size" {
-  description = "The slurm nfs home directory size."
+variable "slurm_home_disk_size" {
+  description = "The slurm home directory size."
   type        = string
   default     = "20480GiB"
 }
