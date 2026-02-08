@@ -45,3 +45,4 @@
     path: "/etc/sudoers.d/{{ user_name }}"
     state: absent
   when: not (user_is_sudoer | default(false) | bool)
+  
