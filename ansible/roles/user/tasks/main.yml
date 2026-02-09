@@ -44,5 +44,6 @@
   ansible.builtin.file:
     path: "/etc/sudoers.d/{{ user_name }}"
     state: absent
+  ignore_errors: yes
   when: not (user_is_sudoer | default(false) | bool)
   
