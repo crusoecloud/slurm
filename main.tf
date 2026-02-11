@@ -233,20 +233,20 @@ resource "ansible_host" "slurm_login_node_host" {
 # Compute nodes - ansible
 resource "ansible_host" "slurm_compute_node_host" {
   for_each = {
-    for n in crusoe_compute_instance.slurm_compute_node : n.name => n
+    for inst in local.compute_instances : inst.key => inst
   }
-  name = each.value.name
+  name = each.value.key
   groups = [
     "slurm_compute_nodes",
-    format("%s%s",split("-", each.value.name)[0],"_compute_nodes"),
+    format("%s%s", each.value.partition_name, "_compute_nodes"),
     replace(split(".", each.value.type)[0], "-", "_"),
   ]
   variables = {
-    ansible_host   = each.value.network_interfaces[0].public_ipv4.address
+    ansible_host   = crusoe_compute_instance.slurm_compute_node[each.key].network_interfaces[0].public_ipv4.address
     #slurm_features contains a 1 element list consisting of the partition name
-    slurm_features = jsonencode([split("-", each.value.name)[0]])
+    slurm_features = jsonencode([each.value.partition_name])
     instance_type  = each.value.type
-    location       = each.value.location
+    location       = crusoe_compute_instance.slurm_compute_node[each.key].location
   }
 }
 
