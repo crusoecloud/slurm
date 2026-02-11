@@ -39,10 +39,10 @@ resource "crusoe_storage_disk" "slurm_data_disk" {
   type       = "shared-volume"
 }
 
-resource "crusoe_storage_disk" "slurm_nfs_home_disk" {
-  count      = 1
-  name       = "slurm-nfs-home-disk"
-  size       = var.slurm_shared_disk_nfs_home_size
+resource "crusoe_storage_disk" "slurm_home_disk" {
+  count      = var.pre_existing_slurm_home_disk_id == null ? 1 : 0
+  name       = "slurm-home-disk"
+  size       = var.slurm_home_disk_size
   location   = var.location
   project_id = var.project_id
   type       = "shared-volume"
@@ -78,7 +78,10 @@ resource "crusoe_compute_instance" "slurm_compute_node" {
   }]
   disks = [
     {
-      id              = crusoe_storage_disk.slurm_nfs_home_disk[0].id
+      id = coalesce(
+        var.pre_existing_slurm_home_disk_id,
+        try(crusoe_storage_disk.slurm_home_disk[0].id, null)
+      )
       mode            = "read-write"
       attachment_type = "data"
     },
@@ -116,11 +119,14 @@ resource "crusoe_compute_instance" "slurm_head_node" {
     id              = crusoe_storage_disk.slurmctld_disk[0].id
     mode            = "read-write"
     attachment_type = "data"
-    }, {
-    id              = crusoe_storage_disk.slurm_nfs_home_disk[0].id
+    },{    
+    id = coalesce(
+        var.pre_existing_slurm_home_disk_id,
+        try(crusoe_storage_disk.slurm_home_disk[0].id, null)
+    )
     mode            = "read-write"
     attachment_type = "data"
-  }]
+    }]
 }
 
 resource "crusoe_compute_instance" "slurm_login_node" {
@@ -143,7 +149,10 @@ resource "crusoe_compute_instance" "slurm_login_node" {
     }
   }]
   disks = [{
-    id              = crusoe_storage_disk.slurm_nfs_home_disk[0].id
+    id = coalesce(
+        var.pre_existing_slurm_home_disk_id,
+        try(crusoe_storage_disk.slurm_home_disk[0].id, null)
+    )
     mode            = "read-write"
     attachment_type = "data"
     },
@@ -224,20 +233,20 @@ resource "ansible_host" "slurm_login_node_host" {
 # Compute nodes - ansible
 resource "ansible_host" "slurm_compute_node_host" {
   for_each = {
-    for n in crusoe_compute_instance.slurm_compute_node : n.name => n
+    for inst in local.compute_instances : inst.key => inst
   }
-  name = each.value.name
+  name = each.value.key
   groups = [
     "slurm_compute_nodes",
-    format("%s%s",split("-", each.value.name)[0],"_compute_nodes"),
+    format("%s%s", each.value.partition_name, "_compute_nodes"),
     replace(split(".", each.value.type)[0], "-", "_"),
   ]
   variables = {
-    ansible_host   = each.value.network_interfaces[0].public_ipv4.address
+    ansible_host   = crusoe_compute_instance.slurm_compute_node[each.key].network_interfaces[0].public_ipv4.address
     #slurm_features contains a 1 element list consisting of the partition name
-    slurm_features = jsonencode([split("-", each.value.name)[0]])
+    slurm_features = jsonencode([each.value.partition_name])
     instance_type  = each.value.type
-    location       = each.value.location
+    location       = crusoe_compute_instance.slurm_compute_node[each.key].location
   }
 }
 
@@ -250,7 +259,7 @@ resource "ansible_group" "all" {
     grafana_admin_password     = var.grafana_admin_password
     vastnfs_version            = var.vastnfs_version
     slurm_data_disk_id         = var.pre_existing_slurm_data_disk_id != null ? var.pre_existing_slurm_data_disk_id : length(crusoe_storage_disk.slurm_data_disk) > 0 ? crusoe_storage_disk.slurm_data_disk[0].id : null
-    slurm_nfs_home_disk_id     = try(crusoe_storage_disk.slurm_nfs_home_disk[0].id, null)
+    slurm_home_disk_id         = var.pre_existing_slurm_home_disk_id != null ? var.pre_existing_slurm_home_disk_id : length(crusoe_storage_disk.slurm_home_disk) > 0 ? crusoe_storage_disk.slurm_home_disk[0].id : null
     slurmctld_disk_id          = try(crusoe_storage_disk.slurmctld_disk[0].id, null)
     slurm_data_disk_mount_path = var.slurm_data_disk_mount_path
   }

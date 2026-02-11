@@ -107,6 +107,7 @@ variable "slurm_users" {
     name       = string
     uid        = number
     ssh_pubkey = string
+    is_sudoer  = optional(bool, false)
   }))
   default = []
 }
@@ -130,8 +131,8 @@ variable "slurm_data_disk_size" {
   default     = "1024000GiB"
 }
 
-variable "slurm_shared_disk_nfs_home_size" {
-  description = "The slurm nfs home directory size."
+variable "slurm_home_disk_size" {
+  description = "The slurm home directory size."
   type        = string
   default     = "20480GiB"
 }
@@ -140,6 +141,12 @@ variable "slurmctld_disk_size" {
   description = "The slurmctld disk size. This is required to persist slurm cluster state"
   type        = string
   default     = "1024GiB"
+}
+
+variable "pre_existing_slurm_home_disk_id" {
+  description = "Use a pre-existing Slurm VAST data disk"
+  type        = string
+  default     = null
 }
 
 variable "pre_existing_slurm_data_disk_id" {
