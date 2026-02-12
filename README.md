@@ -1,6 +1,7 @@
-# SLURM v2-multiple-compute-partitions
+# SLURM v3
 This repository is the simplest way to create a high-availability
 [SLURM](https://slurm.schedmd.com/quickstart.html) cluster on Crusoe Cloud.
+This branch (v3) allows multiple partitions of different compute host types to be specified using the 'partitions' list variable.
 To get started, create a file named `terraform.tfvars` with the cluster
 parameters. Use examples/dual-compute-partitions-with-nfs.tfvars as your starting point. Populate project, location, SSH key, and vpc subnet variables. Create the partitions array according to your needs, then apply the terraform:
 ```
