@@ -174,6 +174,7 @@ resource "crusoe_vpc_firewall_rule" "allow_grafana_access" {
   direction         = "ingress"
   name              = "grafana-slurm-access"
   network           = crusoe_compute_instance.slurm_head_node[0].network_interfaces[0].network
+  project_id        = var.project_id
   protocols         = "tcp"
   source            = "0.0.0.0/0"
   source_ports      = "1-65535"
