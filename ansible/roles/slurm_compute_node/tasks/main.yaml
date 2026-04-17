@@ -19,11 +19,11 @@
     group: root
     mode: '0644'
 
-- name: Create Enroot scratch directory with recursive 777 permissions
+- name: Create Enroot scratch directory with recursive 1777 permissions
   ansible.builtin.file:
     path: /scratch/local/enroot
     state: directory
-    mode: '0777'
+    mode: '1777'
   when: (ansible_local.nvme.nvme.count | int) > 0
     
 - name: Mount vastnfs slurm_data_disk

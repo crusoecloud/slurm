@@ -9,6 +9,6 @@ interface_name: "{{ ansible_default_ipv4.interface }}"
 rx_buffer_size: 8192
 tx_buffer_size: 8192
 
-#GB200 support
-vastnfs_new_kernels: "4.5.0-rc3"
+# Kernel versions for VAST NFS Driver
+vastnfs_new_kernels: "4.5.1"
 vastnfs_old_kernels: "4.0.35"
