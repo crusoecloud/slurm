@@ -69,61 +69,47 @@ variable "slurm_login_node_ib_partition_id" {
   default     = null
 }
 
-variable "slurm_compute_node_type" {
-  description = "The slurm compute node instance type."
-  type        = string
-}
-
-variable "slurm_compute_node_count" {
-  description = "The number of slurm compute nodes."
-  type        = number
-}
-
-# This is only required when using an infiniband enabled instance type for the compute nodes.
-variable "slurm_compute_node_ib_partition_id" {
-  description = "The ib partition in which to create the compute nodes."
-  type        = string
-  default     = null
-}
-
-variable "slurm_compute_node_reservation_id" {
-  description = "The slurm compute node reservation id"
-  type        = string
-  default     = null
-}
-
-variable "slurm_users" {
-  description = "Additional users"
-  type        = list(object({
-    name      = string
-    uid       = number
-    ssh_pubkey = string
-  }))
-  default     = []
-}
-
 variable "partitions" {
   description = "Partition configuration"
   type = list(object({
-    name = string
+    name       = string
+    count      = number
+    type       = string
+    imex_support = bool
+    ib_partition_id = string
+    image = string
+    custom_image = string
+    reservation_id = string
     extra_args = map(string)
   }))
   default = [
     {
-      name = "batch"
+      name = "partition1"
+      count = 0
+      type = "b200-180gb-sxm-ib.8x"
+      imex_support = false
+      ib_partition_id = null
+      image = "ubuntu22.04-nvidia-slurm:latest"
+      custom_image = null
+      reservation_id = null
       extra_args = {
         "Default" = "YES",
         "MaxTime" = "INFINITE",
-        "State" = "UP",
-      }
-    }, {
-      name = "login"
-      extra_args = {
-        "State":  "INACTIVE",
-				"Hidden": "YES",
+        "State"   = "UP",
       }
     }
   ]
+}
+
+variable "slurm_users" {
+  description = "Additional users"
+  type = list(object({
+    name       = string
+    uid        = number
+    ssh_pubkey = string
+    is_sudoer  = optional(bool, false)
+  }))
+  default = []
 }
 
 variable "enable_observability" {
@@ -145,8 +131,8 @@ variable "slurm_data_disk_size" {
   default     = "1024000GiB"
 }
 
-variable "slurm_shared_disk_nfs_home_size" {
-  description = "The slurm nfs home directory size."
+variable "slurm_home_disk_size" {
+  description = "The slurm home directory size."
   type        = string
   default     = "20480GiB"
 }
@@ -155,6 +141,12 @@ variable "slurmctld_disk_size" {
   description = "The slurmctld disk size. This is required to persist slurm cluster state"
   type        = string
   default     = "1024GiB"
+}
+
+variable "pre_existing_slurm_home_disk_id" {
+  description = "Use a pre-existing Slurm VAST data disk"
+  type        = string
+  default     = null
 }
 
 variable "pre_existing_slurm_data_disk_id" {
@@ -169,32 +161,20 @@ variable "slurm_data_disk_mount_path" {
   default     = "/data"
 }
 
-variable "vastnfs_version"{
+variable "vastnfs_version" {
   description = "The VAST NFS driver version"
   type        = string
   default     = "4.0.35"
 }
 
-variable "enable_imex_support" {
-  description = "If true, a file with the list of all compute node IPs will be created for use with imex"
-  type        = bool
-  default     = false
-}
-
-variable "compute_node_custom_image_name" {
-  description = "name:tag of your Custom Image for Compute Nodes"
-  type        = string
-  default     = null
-} 
-
 variable "head_node_custom_image_name" {
   description = "name:tag of your Custom Image for Head Nodes"
   type        = string
   default     = null
-} 
+}
 
 variable "login_node_custom_image_name" {
   description = "name:tag of your Custom Image for Login Nodes"
   type        = string
   default     = null
-} 
+}

@@ -30,7 +30,7 @@
   ansible.posix.mount:
     src: "nfs.crusoecloudcompute.com:/volumes/{{ slurm_data_disk_id | default(crusoe_storage_disk.slurm_data_disk[0].id) }}"
     path: "{{ slurm_data_disk_mount_path }}"
-    opts: "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=dns"
+    opts: "vers=3,nconnect=16,spread_reads,spread_writes,remoteports=dns,_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=30"
     state: mounted
     fstype: nfs
 
@@ -70,13 +70,15 @@
     daemon_reload: true
 
 - name: IMEX Support
-  when: 
-    - use_imex | default(false) |  bool
-    - "'login' not in slurm_features | from_json"
+  when:
+    - partitions | from_json | selectattr('imex_support', 'equalto', true) | list | length > 0
+    - slurm_features | from_json | intersect((partitions | from_json | selectattr('imex_support', 'equalto', true) | map(attribute='name') | list)) | length > 0
+  vars:
+    current_partition: "{{ (slurm_features | from_json | intersect((partitions | from_json | selectattr('imex_support', 'equalto', true) | map(attribute='name') | list)))[0] }}"
   block:
   - name: Copy the hostfile to each node
     ansible.builtin.copy:
-      src: ../../../imex_nodes.txt
+      src: "../../../imex_nodes_{{ current_partition }}.txt"
       dest: /etc/nvidia-imex/nodes_config.cfg
       owner: root
       group: root

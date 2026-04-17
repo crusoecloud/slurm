@@ -2,7 +2,7 @@
   ansible.posix.mount:
     src: "nfs.crusoecloudcompute.com:/volumes/{{ slurmctld_disk_id }}"
     path: /var/spool/slurmctld
-    opts: "proto=tcp,nconnect=16,spread_reads,spread_writes,remoteports=dns"
+    opts: "vers=3,nconnect=16,spread_reads,spread_writes,remoteports=dns,_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=30"
     state: mounted
     fstype: nfs
 

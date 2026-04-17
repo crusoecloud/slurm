@@ -8,9 +8,79 @@
       - debhelper
       - dpkg-dev
       - gcc-12
+      - build-essential
+      - ncdu
+      - rclone
+      - zsh
+      - python3-venv
       - ethtool
     state: latest
     update_cache: true 
+
+- name: Check if Miniconda is already installed
+  stat:
+    path: /opt/miniconda3/bin/conda
+  register: miniconda_installed
+
+- name: Download Miniconda installer
+  get_url:
+    url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-{{ ansible_architecture }}.sh
+    dest: /tmp/miniconda_installer.sh
+    mode: '0755'
+  when: not miniconda_installed.stat.exists
+
+- name: Install Miniconda
+  shell: |
+    /tmp/miniconda_installer.sh -b -p /opt/miniconda3
+  args:
+    creates: /opt/miniconda3/bin/conda
+  when: not miniconda_installed.stat.exists
+
+- name: Initialize Miniconda for all users
+  lineinfile:
+    path: /etc/profile.d/miniconda.sh
+    line: 'export PATH="/opt/miniconda3/bin:$PATH"'
+    create: yes
+    mode: '0644'
+  when: not miniconda_installed.stat.exists
+
+- name: Clean up Miniconda installer
+  file:
+    path: /tmp/miniconda_installer.sh
+    state: absent
+  when: not miniconda_installed.stat.exists
+
+- name: Check if awscli is already installed
+  stat:
+    path: /usr/local/bin/aws
+  register: awscli_installed
+
+- name: Download awscli installer
+  get_url:
+    url: https://awscli.amazonaws.com/awscli-exe-linux-{{ ansible_architecture }}.zip
+    dest: /tmp/awscliv2.zip
+    mode: '0644'
+  when: not awscli_installed.stat.exists
+
+- name: Unzip awscli
+  shell: |
+    /usr/bin/unzip /tmp/awscliv2.zip -d /tmp
+  args:
+    creates: /tmp/aws
+  when: not awscli_installed.stat.exists
+
+- name: Install awscli
+  shell: |
+    sudo /tmp/aws/install
+  args:
+    creates: /usr/local/bin/aws
+  when: not awscli_installed.stat.exists
+
+- name: Clean up awscli installer
+  file:
+    path: /tmp/awscliv2.zip
+    state: absent
+  when: not awscli_installed.stat.exists
 
 - name: Ensure custom facts directory exists
   ansible.builtin.file:

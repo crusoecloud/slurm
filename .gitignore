@@ -1,3 +1,4 @@
+imex_nodes_*
 ansible/inventory/hosts
 .terraform
 .terraform.lock.hcl
