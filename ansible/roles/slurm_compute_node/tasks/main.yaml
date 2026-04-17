@@ -28,9 +28,9 @@
     
 - name: Mount vastnfs slurm_data_disk
   ansible.posix.mount:
-    src: "nfs.crusoecloudcompute.com:/volumes/{{ slurm_data_disk_id | default(crusoe_storage_disk.slurm_data_disk[0].id) }}"
+    src: "100.64.0.2:/volumes/{{ slurm_data_disk_id | default(crusoe_storage_disk.slurm_data_disk[0].id) }}"
     path: "{{ slurm_data_disk_mount_path }}"
-    opts: "vers=3,nconnect=16,spread_reads,spread_writes,remoteports=dns,_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=30"
+    opts: "vers=3,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17,_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=30"
     state: mounted
     fstype: nfs
 
