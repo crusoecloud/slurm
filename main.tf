@@ -161,48 +161,6 @@ resource "crusoe_compute_instance" "slurm_login_node" {
   }]
 }
 
-resource "crusoe_compute_instance" "slurm_compute_node" {
-  count    = var.slurm_compute_node_count
-  name     = var.enable_imex_support ? "slurm-compute-node-${format("%03d", count.index)}" : "slurm-compute-node-${count.index}" 
-  type       = var.slurm_compute_node_type
-  ssh_key  = local.ssh_public_key
-  location = var.location
-  project_id = var.project_id
-  image    = var.compute_node_custom_image_name != null ? null : "ubuntu24.04-nvidia-slurm:latest"
-  custom_image = var.compute_node_custom_image_name != null ? var.compute_node_custom_image_name : null
-  host_channel_adapters = var.slurm_compute_node_ib_partition_id != null ? [{
-    ib_partition_id = var.slurm_compute_node_ib_partition_id
-  }]: null
-  network_interfaces = [{
-    subnet = var.vpc_subnet_id,
-    public_ipv4 = {
-      type = "static"
-    }
-  }]
-  disks = [
-  {
-    id              = crusoe_storage_disk.slurm_nfs_home_disk[0].id
-    mode            = "read-write"
-    attachment_type = "data"
-  },
-  {
-    id              = coalesce(
-      var.pre_existing_slurm_data_disk_id,
-      try(crusoe_storage_disk.slurm_data_disk[0].id, null)
-    )
-    mode            = "read-write"
-    attachment_type = "data"
-    },
-    {
-      id = coalesce(
-        var.pre_existing_slurm_data_disk_id,
-        try(crusoe_storage_disk.slurm_data_disk[0].id, null)
-      )
-      mode            = "read-write"
-      attachment_type = "data"
-  }]
-}
-
 resource "crusoe_vpc_firewall_rule" "allow_grafana_access" {
   count             = var.enable_observability ? 1 : 0
   action            = "allow"
