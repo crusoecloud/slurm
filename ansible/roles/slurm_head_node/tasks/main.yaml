@@ -1,8 +1,8 @@
 - name: Mount /var/spool/slurmctld
   ansible.posix.mount:
-    src: "100.64.0.2:/volumes/{{ slurmctld_disk_id }}"
+    src: "{{ vast_nfs_server_host }}:/volumes/{{ slurmctld_disk_id }}"
     path: /var/spool/slurmctld
-    opts: "vers=3,nconnect=16,spread_reads,spread_writes,remoteports=100.64.0.2-100.64.0.17,_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=30"
+    opts: "vers=3,nconnect=16,spread_reads,spread_writes,remoteports={{ vast_nfs_remoteports }},_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=30"
     state: mounted
     fstype: nfs
 

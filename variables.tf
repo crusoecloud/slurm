@@ -167,6 +167,18 @@ variable "vastnfs_version" {
   default     = "4.0.35"
 }
 
+variable "vast_nfs_server_host" {
+  description = "The VAST NFS server hostname or IP address used as the NFS mount source"
+  type        = string
+  default     = "172.27.255.2"
+}
+
+variable "vast_nfs_remoteports" {
+  description = "The VAST NFS remoteports range used in NFS mount options"
+  type        = string
+  default     = "172.27.255.2-172.27.255.17"
+}
+
 variable "head_node_custom_image_name" {
   description = "name:tag of your Custom Image for Head Nodes"
   type        = string

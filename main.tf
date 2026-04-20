@@ -263,6 +263,8 @@ resource "ansible_group" "all" {
     slurm_home_disk_id         = var.pre_existing_slurm_home_disk_id != null ? var.pre_existing_slurm_home_disk_id : length(crusoe_storage_disk.slurm_home_disk) > 0 ? crusoe_storage_disk.slurm_home_disk[0].id : null
     slurmctld_disk_id          = try(crusoe_storage_disk.slurmctld_disk[0].id, null)
     slurm_data_disk_mount_path = var.slurm_data_disk_mount_path
+    vast_nfs_server_host       = var.vast_nfs_server_host
+    vast_nfs_remoteports       = var.vast_nfs_remoteports
   }
 }
 

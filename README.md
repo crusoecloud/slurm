@@ -119,6 +119,22 @@ login_node_custom_image_name = "your-custom-login-node-image:tag"
 
 This will override the default setting and use custom images for the nodes.
 
+### VAST NFS Configuration
+
+The NFS connection to VAST shared storage is controlled by two variables:
+
+| Variable | Description | Default |
+|---|---|---|
+| `vast_nfs_server_host` | Hostname or IP address of the VAST NFS server | `172.27.255.2` |
+| `vast_nfs_remoteports` | Value of the `remoteports` NFS mount option | `172.27.255.2-172.27.255.17` |
+
+The defaults are correct for **us-east1-a** (vaeq) and **us-southcentral1-a** (txdr). For **eu-iceland1-a**, set the following in your `terraform.tfvars`:
+
+```
+vast_nfs_server_host = "nfs.crusoecloudcompute.com"
+vast_nfs_remoteports = "dns"
+```
+
 ### Observability
 The slurm solution comes pre-packaged with dashbords displaying VM utilization metrics such as CPU usage, and GPU metrics based off of `dcgm-exporter`. You will only get observability if you set the `enable_observability` variable to true. You can set the `grafana_admin_password` variable, but if you don't, it will default to `admin`. The solution will also add a firewall rule to ensure you can access the dashboard.
 
