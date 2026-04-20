@@ -8,7 +8,7 @@
 
 - name: Install Node Exporter
   unarchive:
-    src: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    src: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-{{ linux_arch }}.tar.gz"
     dest: /opt/node_exporter
     remote_src: true
     creates: /opt/node_exporter/node_exporter
@@ -59,7 +59,7 @@
       block:
         - name: Download and install Prometheus
           unarchive:
-            src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+            src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-{{ linux_arch }}.tar.gz"
             dest: /opt/prometheus
             remote_src: true
             creates: /opt/prometheus/prometheus
@@ -115,10 +115,10 @@
 
 # Compute node specific tasks
 - name: Setup NVIDIA monitoring on GPU nodes
-  when: 
+  when:
     - inventory_hostname in groups['slurm_compute_nodes']
     - instance_type is defined
-    - (gpu_instance_types | join('|')) is search(instance_type.split('.')[0])
+    - instance_type.split('.')[0] is regex('^(' + (gpu_instance_types | join('|')) + ')')
   block:
     - name: Install Docker and dependencies
       apt:
@@ -131,6 +131,16 @@
           - python3-docker
         state: present
         update_cache: true
+
+    - name: Check for existing services
+      ansible.builtin.service_facts:
+
+    - name: Disable legacy dcgm-exporter service
+      ansible.builtin.systemd:
+        name: dcgm-exporter
+        enabled: false
+        state: stopped
+      when: "'dcgm-exporter.service' in services"
 
     - name: Ensure Docker service is running
       systemd:
@@ -147,11 +157,17 @@
         image: "nvcr.io/nvidia/k8s/dcgm-exporter:{{ dcgm_exporter_version }}"
         state: started
         restart_policy: always
+        network_mode: host
+        command: "-r localhost:5555"
         ports:
           - "{{ dcgm_exporter_port }}:9400"
+        capabilities:
+          - SYS_ADMIN
         runtime: nvidia
         device_requests:
-          - capabilities: [["gpu"]]
+          - driver: nvidia
+            count: -1
+            capabilities: [["gpu"]]
 
 - name: Create Prometheus data directory
   file:

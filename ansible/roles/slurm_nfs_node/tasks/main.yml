@@ -3,7 +3,7 @@
     name: raid0
   vars:
     raid0_mount_path: /scratch/shared
-  when: (disk_count | int) > 0
+  when: (ansible_local.nvme.nvme.count | int) > 0
 
 - name: "Create /var/spool/slurmctld directory"
   file:

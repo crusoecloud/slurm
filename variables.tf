@@ -69,95 +69,45 @@ variable "slurm_login_node_ib_partition_id" {
   default     = null
 }
 
-variable "slurm_nfs_node_type" {
-  description = "The slurm nfs node instance type."
-  type        = string
-  default     = "s1a.80x"
-}
-
-variable "slurm_nfs_home_size" {
-  description = "The slurm nfs host size."
-  type        = string
-  default     = "10240GiB"
-}
-
-# This is only required when using an infiniband enabled instance type for the nfs node.
-variable "slurm_nfs_node_ib_partition_id" {
-  description = "The ib partition in which to create the nfs node."
-  type        = string
-  default     = null
-}
-
-variable "slurm_nfs_node_reservation_id" {
-  description = "The slurm nfs node reservation id"
-  type        = string
-  default     = null
-}
-
-variable "slurm_compute_node_type" {
-  description = "The slurm compute node instance type."
-  type        = string
-}
-
-variable "slurm_compute_node_count" {
-  description = "The number of slurm compute nodes."
-  type        = number
-}
-
-# This is only required when using an infiniband enabled instance type for the compute nodes.
-variable "slurm_compute_node_ib_partition_id" {
-  description = "The ib partition in which to create the compute nodes."
-  type        = string
-  default     = null
-}
-
-variable "slurm_compute_node_reservation_id" {
-  description = "The slurm compute node reservation id"
-  type        = string
-  default     = null
-}
-
-variable "slurm_users" {
-  description = "Additional users"
-  type = list(object({
-    name = string
-    uid = number
-    ssh_pubkey = string
-  }))
-  default     = []
-}
-
 variable "partitions" {
   description = "Partition configuration"
   type = list(object({
-    name = string
+    name       = string
+    count      = number
+    type       = string
+    imex_support = bool
+    ib_partition_id = string
+    image = string
+    custom_image = string
+    reservation_id = string
     extra_args = map(string)
   }))
   default = [
     {
-      name = "batch"
+      name = "partition1"
+      count = 0
+      type = "b200-180gb-sxm-ib.8x"
+      imex_support = false
+      ib_partition_id = null
+      image = "ubuntu22.04-nvidia-slurm:latest"
+      custom_image = null
+      reservation_id = null
       extra_args = {
         "Default" = "YES",
         "MaxTime" = "INFINITE",
-        "State" = "UP",
-      }
-    }, {
-      name = "login"
-      extra_args = {
-        "State":  "INACTIVE",
-				"Hidden": "YES",
+        "State"   = "UP",
       }
     }
   ]
 }
 
-variable "slurm_shared_volumes" {
-  description = "The shared volume mounts"
+variable "slurm_users" {
+  description = "Additional users"
   type = list(object({
-    id          = string
-    name        = string
-    mount_point = string 
-    mode        = string # "ready-only" | "read-write"
+    name       = string
+    uid        = number
+    ssh_pubkey = string
+    is_sudoer  = optional(bool, false)
   }))
   default = []
 }
@@ -173,4 +123,70 @@ variable "grafana_admin_password" {
   type        = string
   default     = "admin"
   sensitive   = true
+}
+
+variable "slurm_data_disk_size" {
+  description = "The slurm data disk size."
+  type        = string
+  default     = "1024000GiB"
+}
+
+variable "slurm_home_disk_size" {
+  description = "The slurm home directory size."
+  type        = string
+  default     = "20480GiB"
+}
+
+variable "slurmctld_disk_size" {
+  description = "The slurmctld disk size. This is required to persist slurm cluster state"
+  type        = string
+  default     = "1024GiB"
+}
+
+variable "pre_existing_slurm_home_disk_id" {
+  description = "Use a pre-existing Slurm VAST data disk"
+  type        = string
+  default     = null
+}
+
+variable "pre_existing_slurm_data_disk_id" {
+  description = "Use a pre-existing Slurm VAST data disk"
+  type        = string
+  default     = null
+}
+
+variable "slurm_data_disk_mount_path" {
+  description = "This is the training/checkpoint disk mount path"
+  type        = string
+  default     = "/data"
+}
+
+variable "vastnfs_version" {
+  description = "The VAST NFS driver version"
+  type        = string
+  default     = "4.0.35"
+}
+
+variable "vast_nfs_server_host" {
+  description = "The VAST NFS server hostname or IP address used as the NFS mount source"
+  type        = string
+  default     = "172.27.255.2"
+}
+
+variable "vast_nfs_remoteports" {
+  description = "The VAST NFS remoteports range used in NFS mount options"
+  type        = string
+  default     = "172.27.255.2-172.27.255.17"
+}
+
+variable "head_node_custom_image_name" {
+  description = "name:tag of your Custom Image for Head Nodes"
+  type        = string
+  default     = null
+}
+
+variable "login_node_custom_image_name" {
+  description = "name:tag of your Custom Image for Login Nodes"
+  type        = string
+  default     = null
 }

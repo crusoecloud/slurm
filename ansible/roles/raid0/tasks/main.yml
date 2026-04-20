@@ -6,9 +6,9 @@
     line: 'HOSTNAME <ignore>'
   notify: Update initramfs
 
-- name: Copy raid0.sh
+- name: Copy raid0-enhanced.sh
   ansible.builtin.copy:
-    src: raid0.sh
+    src: raid0-enhanced.sh
     dest: /usr/sbin/raid0.sh
     owner: root
     group: root
@@ -39,6 +39,11 @@
     name: raid0.service
     state: restarted
     enabled: true
+
+# - name: Create filesystem if not already present
+#   community.general.filesystem:
+#     fstype: xfs
+#     dev: /dev/md/ephemeral
 
 - name: Restart raid0 mount
   ansible.builtin.systemd_service:

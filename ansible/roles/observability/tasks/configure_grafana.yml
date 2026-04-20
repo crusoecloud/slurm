@@ -39,14 +39,23 @@
     mode: '0644'
   notify: restart grafana
 
-- name: Copy Grafana dashboards
+- name: Copy Grafana node dashboard
   template:
+    src: node-dashboard.json.j2
+    dest: /var/lib/grafana/dashboards/node-dashboard.json
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: restart grafana
+
+- name: Copy Grafana dashboard files
+  copy:
     src: "{{ item }}"
-    dest: "/var/lib/grafana/dashboards/{{ item | basename | regex_replace('\\.j2$', '') }}"
+    dest: "/var/lib/grafana/dashboards/{{ item }}"
     owner: grafana
     group: grafana
     mode: '0644'
   with_items:
-    - gpu-dashboard.json.j2
-    - node-dashboard.json.j2
-  notify: restart grafana 
+    - better-nvidia-dcgm-dashboard.json
+    - nvitop-dashboard.json
+  notify: restart grafana

@@ -1,86 +1,62 @@
-# SLURM
+# SLURM v3
 This repository is the simplest way to create a high-availability
 [SLURM](https://slurm.schedmd.com/quickstart.html) cluster on Crusoe Cloud.
+This branch (v3) allows multiple partitions of different compute host types to be specified using the 'partitions' list variable.
 To get started, create a file named `terraform.tfvars` with the cluster
-parameters. For example `.tfvars` files, see the `examples` directory.
+parameters. Use examples/dual-compute-partitions-with-nfs.tfvars as your starting point. Populate project, location, SSH key, and vpc subnet variables. Create the partitions array according to your needs, then apply the terraform:
 ```
-terraform init
+terraform init --upgrade
+terraform plan
 terraform apply
 ```
 
 ## What is provided by the cluster?
-![cluster architecture](docs/img/slurm.png)
+![cluster architecture](docs/img/slurm_v2.png)
 
 By default, this solution will create a high-availability SLURM cluster with:
-* 2 `c1a.16x` head nodes
-* 2 `c1a.16x` login nodes
-* 1 `s1a.80x` nfs node
-* n compute nodes of any instance type.
+* 2 `c1a.4x` head nodes
+* 2 `c1a.4x` login nodes
+* Crusoe NFS Shared Disk for shared home directory
+* Crusoe NFS Shared Disk for shared data directory (either new or importing an existing disk)
+* Crusoe NFS Shared Disk for persisting Slurm controller state 
+* Any number of partitions of any number of compute instance types.
+
+***Note:*** Currently the following Crusoe compute node instance types are supported: 
+- NVIDIA GB200 NVL72 (`gb200-186gb-nvl-ib.4x`,`gb200-186gb-nvl.4x`)
+- NVIDIA B200 (`b200-180gb-sxm-ib.8x`)
+- NVIDIA H200 (`h200-144gb-sxm-ib.8x`)
+- NVIDIA H100 (`h100-80gb-sxm-ib.8x`)
+- NVIDIA A100 (`a100-80gb-sxm-ib.8x`)
+For GB200 and B200, create a custom image based on the latest official GB200 or B200 Crusoe Cloud image by following [these instructions](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image) and populate the 'custom_image' property of relevant partitions list element with the name and tag of your custom image. If custom_image is populated, it will override the value of the 'image' property for the compute nodes in that partition. 
 
 ## Storage
-![storage architecture](docs/img/slurm-storage.png)
-
-This solution currently supports four tiers of storage:
+This solution currently supports three tiers of storage:
 
 ### Local Scratch
-Each `slurm-compute-node` instance supports up to `7.5 TiB` of local scratch
-storage, depending on the instance type. If present, scratch storage is located
-at `/scratch/local`.  The local scratch storage is erased whenever the compute
-node is stopped.
+Each compute node instance supports local scratch storage, and the size depends on the instance type. If present, scratch storage is located at `/scratch/local`.  The local scratch storage is erased whenever the compute node is stopped.
 
 The local scratch size on common compute node instance types are:
-* `a40.8x`: 7.5 TiB
-* `100.8x`: 7.5 TiB
-* `a100-80gb.8x`: 7.5 TiB
-* `a100-80gb-sxm-ib.8x`: 7.5 TiB
-* `h100-80gb-sxm-ib.8x`: 7.5 TiB
-* `l40s-48gb.8x`: None
-* `c1a.176x`: None
-
-### Shared Scratch
-Each cluster supports up to `51.2 TiB` of shared scratch storage, depending on
-the instance type of `slurm-nfs-node-0`. This scratch storage is located at
-`/scratch/shared`. The shared scratch storage is erased whenever
-`slurm-nfs-node-0` is stopped.
-
-The `slurm_nfs_node_type` variable can optionally be set in the `terraform.tfvars` file
-to configure the instance type used to create `slurm-nfs-node-0`. If left unconfigured,
-this will default to `s1a.80x`.
-
-The remote scratch size on common nfs node instance types are:
-* `s1a.80x`: 51.2 TiB
-* `s1a.40x`: 25.6 TiB
-* `c1a.176x`: None
+* `gb200-186gb-nvl-ib.4x`,`gb200-186gb-nvl.4x`: 7.68TB
+* `b200-180gb-sxm-ib.8x`: 15.32TB 
+* `h200-144gb-sxm-ib.8x`: 15.32TB 
+* `h100-80gb-sxm-ib.8x`: 7.68TB
+* `a100-80gb-sxm-ib.8x`: 7.68TB
 
 ### Shared Home Directory
-The `slurm-nfs-node-0` node exports a persistent `/home` directory that is mounted by
-all login nodes and all compute nodes. This offers up to `10 TiB` of persistent shared
-storage.
+The `slurm-home-disk` node exports a persistent `/home` directory that is mounted using NFS by all login nodes and all compute nodes. It uses the Crusoe [Shared Disk](https://docs.crusoecloud.com/storage/disks/managing-shared-disks/index.html) powered by VAST.
 
-The `slurm_nfs_home_size` variable can optionally be set in the `terraform.tfvars` file
-to configure the size of the `/home` nfs share. If left unconfigured, this will default
-to 10 TiB. Note that `10 TiB` is the maximum currently supported by Crusoe Cloud.
+The `slurm_shared_disk_home_size` variable can optionally be set in the `terraform.tfvars` file to configure the size of the `/home` nfs share. If left unconfigured, this will default to 20 TiB.
 
-Note: the lifecycle of the shared home directory is tied to the lifecycle of the cluster.
-Deleting the cluster will delete the shared home directory. A seperate shared data
-directory is recommended for storing critical data.
+***Note:*** The lifecycle of the shared home directory is tied to the lifecycle of the cluster. Deleting the cluster will delete the shared home directory. 
 
 ### Shared Data Directory
-The `slurm_shared_volumes` variable can be used to add additional
-[shared volumes](https://docs.crusoecloud.com/storage/disks/managing-shared-disks/index.html) storage
-to the cluster. This is the recommended way to add high-performance persistent file storage
-to your cluster.
+You can also create a Shared Data directory called `slurm-data-disk`, also mounted to all the login nodes and all compute nodes via NFS. It also uses Shared Disk. You can set the size of the disk using `slurm_data_disk_size`, or let it default to 1000TiB. The disk will mount, by default, to `/data`.
 
-```
-slurm_shared_volumes = [{
-  id = "8146e3ef-4192-4f59-b2d6-6a8b3dfe5cf3"
-  name = "data-01"
-  mode = "read-write"
-  mount_point = "/mnt/data-01"
-}]
-```
+If you have an existing Shared Disk you want to use as Shared Data directory, provide its disk ID using the `pre_existing_slurm_data_disk_id` variable. (This will ignore any new shared data directory variables such as `slurm_data_disk_size` from above) This is the recommended way to add high-performance persistent file storage to your cluster, if you want to persist data outside the lifecycle of the slurm cluster.
 
-## User Management
+## Features
+
+### User Management
 To add additional users to your cluster, configure the `slurm_users` variable in your
 `terraform.tfvars` file and run `terraform apply`. The following example adds three
 additional users `user1`, `user2`, and `user3` to the slurm cluster.
@@ -101,14 +77,18 @@ slurm_users = [{
 }]
 ```
 
-## Enroot and Pyxis
+### Enroot and Pyxis
 This solution provides support for [NVIDIA Enroot](https://github.com/nvidia/enroot)
 and [Pyxis](https://github.com/NVIDIA/pyxis).
 ```
 srun --container-image=<image> <cmd>
 ```
+**Note**: This solution stores any enroot cache data under `/scratch/local/enroot`.
 
-## MPI
+
+### MPI
+*Note*: PMIx is currently not supported on GB200.
+
 This solution includes PMIx support for running Open MPI applications.
 ```
 srun --mpi=pmix <cmd>
@@ -126,27 +106,84 @@ export NCCL_IBEXT_DISABLE=1
 srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --cpus-per-task=22 --mpi=pmix /opt/nccl-tests/build/all_reduce_perf -b 1M -e 1G -f 2 -g 1
 ```
 
-## How do I handle a head node outage?
+### Custom Images
+By default, all slurm nodes in the solution uses `ubuntu22.04-nvidia-slurm:latest`, which is a slurm VM image provided by Crusoe. To use your own custom image (such as one you build using our [Custom Slurm Image Generation](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image)), ensure that you provide the custom image names for any of the nodes (compute, head or login) in `terraform.tfvars`:
+
+```
+# terraform.tfvars file
+... # other configurations
+compute_node_custom_image_name = "your-custom-compute-node-image:tag"
+head_node_custom_image_name = "your-custom-head-node-image:tag"
+login_node_custom_image_name = "your-custom-login-node-image:tag"
+```
+
+This will override the default setting and use custom images for the nodes.
+
+### VAST NFS Configuration
+
+The NFS connection to VAST shared storage is controlled by two variables:
+
+| Variable | Description | Default |
+|---|---|---|
+| `vast_nfs_server_host` | Hostname or IP address of the VAST NFS server | `172.27.255.2` |
+| `vast_nfs_remoteports` | Value of the `remoteports` NFS mount option | `172.27.255.2-172.27.255.17` |
+
+The defaults are correct for **us-east1-a** (vaeq) and **us-southcentral1-a** (txdr). For **eu-iceland1-a**, set the following in your `terraform.tfvars`:
+
+```
+vast_nfs_server_host = "nfs.crusoecloudcompute.com"
+vast_nfs_remoteports = "dns"
+```
+
+### Observability
+The slurm solution comes pre-packaged with dashbords displaying VM utilization metrics such as CPU usage, and GPU metrics based off of `dcgm-exporter`. You will only get observability if you set the `enable_observability` variable to true. You can set the `grafana_admin_password` variable, but if you don't, it will default to `admin`. The solution will also add a firewall rule to ensure you can access the dashboard.
+
+The dashboard will be exposed from the headnode as a server using port 3000. Simply type in the following in your browser to access the dashboard:
+
+`https://<Head Node IP>:3000`
+
+### GB200 Support
+The slurm solution provides GB200 NVL72 support via configuration of IMEX and Slurm native Block Topology. 
+
+IMEX can be enabled via the variable `enable_imex_support` (set to true). 
+
+In order the configure Block Topology, you will need to do the following:
+
+1. Generate a JSON file that lists all of your running GB200 VMs in your Crusoe Project: `crusoe compute vms list --types gb200-186gb-nvl-ib.4x --states STATE_RUNNING -f json > slurm.json`
+2. Create the tpology configuration file (topology.conf) by running the python file in this directory: `python3 topology.py slurm.json`
+3. SSH into the Head Node, and un-comment this line in `/etc/slurm/slurm.conf`: `TopologyPlugin=topology/block`
+4. Copy the topology.conf file generated in step 1 under `/etc/slurm/topology.conf`
+5. Reconfigure your slurm cluster: `sudo -i scontrol reconfigure`
+6. Verify the topology: `scontrol show topology`. This will show the block topology definition similar to the following:
+
+```
+ubuntu@slurm-head-node-0:~$ scontrol show topology
+BlockName=block01 BlockIndex=0 Nodes=slurm-compute-node-[000-017] BlockSize=18
+BlockName=block02 BlockIndex=1 Nodes=slurm-compute-node-[018-035] BlockSize=18
+BlockName=block03 BlockIndex=2 Nodes=slurm-compute-node-[036-053] BlockSize=18
+BlockName=block04 BlockIndex=3 Nodes=slurm-compute-node-[054-071] BlockSize=18
+BlockName=block05 BlockIndex=4 Nodes=slurm-compute-node-[072-089] BlockSize=18
+BlockName=block06 BlockIndex=5 Nodes=slurm-compute-node-[090-107] BlockSize=18
+BlockName=block07 BlockIndex=6 Nodes=slurm-compute-node-[108-125] BlockSize=18
+BlockName=block08 BlockIndex=7 Nodes=slurm-compute-node-[126-143] BlockSize=18
+BlockName=block09 BlockIndex=8 Nodes=slurm-compute-node-[144-161] BlockSize=18
+BlockName=block10 BlockIndex=9 Nodes=slurm-compute-node-[162-179] BlockSize=18
+```
+
+## Troubleshooting
+
+### How do I handle a head node outage?
 This solution utilizes a secondary head-node that will take over within 10
 seconds if the primary head-node stops responding. As long as at least one
 head-node is still responsive, the cluster will remain usable.
 
-## How do I handle a nfs node outage?
-Note that NFS is not deployed in a high-availability configuration.
-If `slurm-nfs-node-0` goes down, then none of the login nodes or compute
-nodes will be able to mount the `/home` directory. This will prevent users
-from logging in to any `slurm-login-node` or `slurm-compute-node`. The cluster
-will recover gracefully once `slurm-nfs-node-0` is brought back online. 
-During this time, it is still possible to login to any of the nodes as
-the `root` user.
-
-## How do I handle a login node outage?
+### How do I handle a login node outage?
 If one of the login nodes goes offline, the other login nodes will remain
 fully functional. As long as cluster users store data in their home directory,
 which is backed by a nfs share, they should be able to ssh into another login
 node and continue using the cluster.
 
-## How do I handle a compute node outage?
+### How do I handle a compute node outage?
 When a compute node is rebooted or stops responding for more than 5 minutes,
 it will be marked as `DOWN`.
 

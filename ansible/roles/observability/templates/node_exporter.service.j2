@@ -7,7 +7,7 @@ After=network-online.target
 User=node_exporter
 Group=node_exporter
 Type=simple
-ExecStart=/opt/node_exporter/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter \
+ExecStart=/opt/node_exporter/node_exporter-{{ node_exporter_version }}.linux-{{ linux_arch }}/node_exporter \
     --web.listen-address=:{{ node_exporter_port }} \
     --collector.systemd \
     --collector.processes

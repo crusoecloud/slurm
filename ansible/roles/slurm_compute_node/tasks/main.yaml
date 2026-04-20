@@ -1,26 +1,38 @@
-- name: Configure autofs
-  ansible.builtin.import_role:
-    name: autofs
-
-- name: Install dependencies
-  ansible.builtin.apt:
-    name: nfs-common
-
 - name: Mount /scratch/local
   ansible.builtin.import_role:
     name: raid0
   vars:
     raid0_mount_path: /scratch/local
-  when: (disk_count | int) > 0
+  when: (ansible_local.nvme.nvme.count | int) > 0
 
-- name: Mount /scratch/shared
+- name: Ensure Enroot configuration directory exists
+  ansible.builtin.file:
+    path: /etc/enroot/enroot.conf.d
+    state: directory
+    mode: '0755'
+
+- name: Install enroot-99-paths.conf
+  ansible.builtin.template:
+    src: 99-paths.conf
+    dest: /etc/enroot/enroot.conf.d/99-paths.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create Enroot scratch directory with recursive 1777 permissions
+  ansible.builtin.file:
+    path: /scratch/local/enroot
+    state: directory
+    mode: '1777'
+  when: (ansible_local.nvme.nvme.count | int) > 0
+    
+- name: Mount vastnfs slurm_data_disk
   ansible.posix.mount:
-    src: "slurm-nfs-node-0:/scratch/shared"
-    path: /scratch/shared
-    opts: rw,sync,soft
+    src: "{{ vast_nfs_server_host }}:/volumes/{{ slurm_data_disk_id | default(crusoe_storage_disk.slurm_data_disk[0].id) }}"
+    path: "{{ slurm_data_disk_mount_path }}"
+    opts: "vers=3,nconnect=16,spread_reads,spread_writes,remoteports={{ vast_nfs_remoteports }},_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=30"
     state: mounted
     fstype: nfs
-  when: "{{ (hostvars['slurm-nfs-node-0'].disk_count | int) > 0 }}"
 
 - name: Install override.conf
   ansible.builtin.template:
@@ -30,10 +42,24 @@
     group: root
     mode: '0755'
 
+- name: Configure unprivileged user namespace and AppArmor restrictions for Pyxis
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/99-userns.conf
+    state: present
+    reload: true
+  loop:
+    - { key: 'kernel.unprivileged_userns_clone', value: '1' }
+    - { key: 'kernel.apparmor_restrict_unprivileged_userns', value: '0' }
+    - { key: 'kernel.apparmor_restrict_unprivileged_unconfined', value: '0' }
+  # Optional: Prevents failure on Ubuntu 22.04 if the kernel is too old to know these keys
+  ignore_errors: true
+
 - name: Create symbolic link for NVML library
   ansible.builtin.file:
-    src: /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1
-    dest: /usr/lib/x86_64-linux-gnu/libnvidia-ml.so
+    src: /usr/lib/{{ ansible_architecture }}-linux-gnu/libnvidia-ml.so.1
+    dest: /usr/lib/{{ ansible_architecture }}-linux-gnu/libnvidia-ml.so
     state: link
 
 - name: Restart slurmd
@@ -43,11 +69,48 @@
     enabled: true
     daemon_reload: true
 
-- name: Mount all volumes
-  ansible.posix.mount:
-    src: "{{ item.name }}"
-    path: "{{ item.mount_point }}"
-    opts: rw,nofail
-    state: mounted
-    fstype: virtiofs
-  loop: "{{ volumes | from_json }}"
+- name: IMEX Support
+  when:
+    - partitions | from_json | selectattr('imex_support', 'equalto', true) | list | length > 0
+    - slurm_features | from_json | intersect((partitions | from_json | selectattr('imex_support', 'equalto', true) | map(attribute='name') | list)) | length > 0
+  vars:
+    current_partition: "{{ (slurm_features | from_json | intersect((partitions | from_json | selectattr('imex_support', 'equalto', true) | map(attribute='name') | list)))[0] }}"
+  block:
+  - name: Copy the hostfile to each node
+    ansible.builtin.copy:
+      src: "../../../imex_nodes_{{ current_partition }}.txt"
+      dest: /etc/nvidia-imex/nodes_config.cfg
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Discover IMEX major number
+    command: grep nvidia-caps-imex-channels /proc/devices
+    register: imex_device
+
+  - name: Create IMEX channel directory and node as root
+    become: true
+    block:
+      - name: Ensure IMEX channel directory exists
+        file:
+          path: /dev/nvidia-caps-imex-channels
+          state: directory
+          mode: '0755'
+
+      - name: Create channel0 device node
+        command: mknod /dev/nvidia-caps-imex-channels/channel0 c {{ imex_device.stdout.split()[0] }} 0
+        args:
+          creates: /dev/nvidia-caps-imex-channels/channel0
+
+  - name: Stop nvidia-imex service
+    become: true
+    ansible.builtin.systemd:
+      name: nvidia-imex
+      state: stopped
+
+  - name: Start nvidia-imex service
+    become: true
+    ansible.builtin.systemd:
+      name: nvidia-imex
+      state: started
+      enabled: yes

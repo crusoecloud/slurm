@@ -1,5 +1,6 @@
 /home *(rw,async,no_root_squash,no_subtree_check)
 /var/spool/slurmctld *(rw,sync,no_root_squash,no_subtree_check)
-{% if (disk_count | int) > 0 %}
+{% if ansible_local.nvme.nvme.present %}
+# Only export /scratch/shared if NVMe drives are present
 /scratch/shared *(rw,sync,no_root_squash,no_subtree_check)
 {% endif %}

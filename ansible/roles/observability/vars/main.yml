@@ -4,4 +4,5 @@ gpu_instance_types:
   - "h100"
   - "l40s"
   - "h200"
-  
+  - "b200"
+  - "gb200"

@@ -3,7 +3,7 @@ Description=raid0
 
 [Service]
 Type=oneshot
-ExecStart=/bin/bash /usr/sbin/raid0.sh {{ disk_count }}
+ExecStart=/bin/bash /usr/sbin/raid0.sh
 
 [Install]
 WantedBy=multi-user.target
