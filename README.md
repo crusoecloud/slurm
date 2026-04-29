@@ -24,7 +24,7 @@ By default, this solution will create a high-availability SLURM cluster with:
 ***Note:*** Currently the following Crusoe compute node instance types are supported: 
 - NVIDIA GB200 NVL72 (`gb200-186gb-nvl-ib.4x`,`gb200-186gb-nvl.4x`)
 - NVIDIA B200 (`b200-180gb-sxm-ib.8x`)
-- NVIDIA H200 (`h200-144gb-sxm-ib.8x`)
+- NVIDIA H200 (`h200-141gb-sxm-ib.8x`)
 - NVIDIA H100 (`h100-80gb-sxm-ib.8x`)
 - NVIDIA A100 (`a100-80gb-sxm-ib.8x`)
 For GB200 and B200, create a custom image based on the latest official GB200 or B200 Crusoe Cloud image by following [these instructions](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image) and populate the 'custom_image' property of relevant partitions list element with the name and tag of your custom image. If custom_image is populated, it will override the value of the 'image' property for the compute nodes in that partition. 
