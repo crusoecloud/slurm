@@ -1,6 +1,0 @@
-gpu_type: a100-80gb-pcie
-gpu_count: "{{ instance_size }}"
-cpu_count: "{{ ( instance_size | int ) * 12 }}"
-real_memory: "{{ (instance_size | int) * 120320 }}"
-disk_count: "{{ instance_size }}"
-threads_per_core: 2
