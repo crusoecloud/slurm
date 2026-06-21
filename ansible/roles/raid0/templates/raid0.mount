@@ -1,6 +1,8 @@
 [Unit]
-Description=raid0
-After=raid0.service
+Description=Mount RAID0 at {{ raid0_mount_path }}
+DefaultDependencies=no
+After=raid0.service local-fs-pre.target
+Before=local-fs.target
 
 [Mount]
 What=/dev/md/ephemeral
@@ -9,4 +11,4 @@ Type=xfs
 Options=defaults
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=local-fs.target
