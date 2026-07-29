@@ -1,9 +1,8 @@
-# SLURM v3
-This repository is the simplest way to create a high-availability
-[SLURM](https://slurm.schedmd.com/quickstart.html) cluster on Crusoe Cloud.
-It allows multiple partitions of different compute host types to be specified using the 'partitions' list variable.
+# Terraform SLURM Solution
+This repository creates a high-availability
+[SLURM](https://slurm.schedmd.com/quickstart.html) cluster on Crusoe Cloud. It is given as a working example only and is not a supported Crusoe product.
 To get started, create a file named `terraform.tfvars` with the cluster
-parameters. Use examples/dual-compute-partitions-with-nfs.tfvars as your starting point. Populate project, location, SSH key, and vpc subnet variables. Create the partitions array according to your needs, then apply the terraform:
+parameters, using one of examples/*.tfvars as your starting point. Populate the project, location, SSH key, and vpc subnet variables. Create the partitions array according to your needs (for example, a GPU compute partition and a CPU-only partition), then apply the terraform:
 ```
 terraform init --upgrade
 terraform plan
@@ -13,7 +12,7 @@ terraform apply
 ## What is provided by the cluster?
 ![cluster architecture](docs/img/slurm_v2.png)
 
-By default, this solution will create a high-availability SLURM cluster with:
+By default, this solution creates a high-availability SLURM cluster with:
 * 2 `c1a.4x` head nodes
 * 2 `c1a.4x` login nodes
 * Crusoe NFS Shared Disk for shared home directory
@@ -21,13 +20,14 @@ By default, this solution will create a high-availability SLURM cluster with:
 * Crusoe NFS Shared Disk for persisting Slurm controller state 
 * Any number of partitions of any number of compute instance types.
 
-***Note:*** Currently the following Crusoe compute node instance types are supported: 
+***Note:*** Only the following Crusoe GPU compute node instance types are supported: 
 - NVIDIA GB200 NVL72 (`gb200-186gb-nvl-ib.4x`,`gb200-186gb-nvl.4x`)
 - NVIDIA B200 (`b200-180gb-sxm-ib.8x`)
 - NVIDIA H200 (`h200-141gb-sxm-ib.8x`)
 - NVIDIA H100 (`h100-80gb-sxm-ib.8x`)
 - NVIDIA A100 (`a100-80gb-sxm-ib.8x`)
-For GB200 and B200, create a custom image based on the latest official GB200 or B200 Crusoe Cloud image by following [these instructions](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image) and populate the 'custom_image' property of relevant partitions list element with the name and tag of your custom image. If custom_image is populated, it will override the value of the 'image' property for the compute nodes in that partition. 
+All CPU-only instance types (e.g c1a, c2a) are supported.
+For GB200 and B200, you must create a custom image based on the latest official GB200 or B200 Crusoe Cloud image by following [these instructions](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image) and populate the 'custom_image' property of relevant partitions list element with the name and tag of your custom image. If custom_image is populated, it will override the value of the 'image' property for the compute nodes in that partition. For all other compute types, you can set 'custom_image' to null and specify 'image' as 'ubuntu24.04-nvidia-slurm', although if you do want to create a custom image based off the standard ubuntu image (for example, to include specific packages that you need) you can also do that. 
 
 ## Storage
 This solution currently supports three tiers of storage:
@@ -107,12 +107,12 @@ srun -N 2 --ntasks-per-node=8 --gres=gpu:8 --cpus-per-task=22 --mpi=pmix /opt/nc
 ```
 
 ### Custom Images
-By default, all slurm nodes in the solution uses `ubuntu22.04-nvidia-slurm:latest`, which is a slurm VM image provided by Crusoe. To use your own custom image (such as one you build using our [Custom Slurm Image Generation](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image)), ensure that you provide the custom image names for any of the nodes (compute, head or login) in `terraform.tfvars`:
+By default, all slurm nodes in the solution use `ubuntu24.04-nvidia-slurm:latest`, which is a slurm VM image provided by Crusoe. To use your own custom image (such as one you build using our [Custom Slurm Image Generation](https://github.com/crusoecloud/solutions-library/tree/main/slurm-custom-image)), ensure that you provide the custom image names for any of the nodes (compute, head or login) in `terraform.tfvars`:
 
 ```
 # terraform.tfvars file
 ... # other configurations
-compute_node_custom_image_name = "your-custom-compute-node-image:tag"
+(in a partitions array entry) custom_image = "your-custom-compute-node-image:tag"
 head_node_custom_image_name = "your-custom-head-node-image:tag"
 login_node_custom_image_name = "your-custom-login-node-image:tag"
 ```
