@@ -1,7 +1,7 @@
 # SLURM v3
 This repository is the simplest way to create a high-availability
 [SLURM](https://slurm.schedmd.com/quickstart.html) cluster on Crusoe Cloud.
-This branch (v3) allows multiple partitions of different compute host types to be specified using the 'partitions' list variable.
+It allows multiple partitions of different compute host types to be specified using the 'partitions' list variable.
 To get started, create a file named `terraform.tfvars` with the cluster
 parameters. Use examples/dual-compute-partitions-with-nfs.tfvars as your starting point. Populate project, location, SSH key, and vpc subnet variables. Create the partitions array according to your needs, then apply the terraform:
 ```
@@ -38,7 +38,7 @@ Each compute node instance supports local scratch storage, and the size depends 
 The local scratch size on common compute node instance types are:
 * `gb200-186gb-nvl-ib.4x`,`gb200-186gb-nvl.4x`: 7.68TB
 * `b200-180gb-sxm-ib.8x`: 15.32TB 
-* `h200-144gb-sxm-ib.8x`: 15.32TB 
+* `h200-141gb-sxm-ib.8x`: 15.32TB 
 * `h100-80gb-sxm-ib.8x`: 7.68TB
 * `a100-80gb-sxm-ib.8x`: 7.68TB
 
