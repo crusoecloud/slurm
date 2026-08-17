@@ -5,6 +5,13 @@
     raid0_mount_path: /scratch/local
   when: (ansible_local.nvme.nvme.count | int) > 0
 
+- name: Set /scratch/local permissions to 1777
+  ansible.builtin.file:
+    path: /scratch/local
+    state: directory
+    mode: '1777'
+  when: (ansible_local.nvme.nvme.count | int) > 0
+
 - name: Ensure Enroot configuration directory exists
   ansible.builtin.file:
     path: /etc/enroot/enroot.conf.d
@@ -33,6 +40,10 @@
     opts: "vers=3,nconnect=16,spread_reads,spread_writes,remoteports={{ vast_nfs_remoteports }},_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=30"
     state: mounted
     fstype: nfs
+  register: mount_data
+  until: mount_data is succeeded
+  retries: 5
+  delay: 10
 
 - name: Install override.conf
   ansible.builtin.template:

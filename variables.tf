@@ -3,6 +3,12 @@ variable "ssh_public_key_path" {
   type        = string
 }
 
+variable "cluster_name" {
+  description = "Name suffix appended to all cluster resource names (instances, disks, firewall rules) to distinguish this deployment from others in the same project. Leave empty to omit the suffix entirely."
+  type        = string
+  default     = ""
+}
+
 variable "location" {
   description = "The location in which to create the cluster."
   type        = string
@@ -189,4 +195,46 @@ variable "login_node_custom_image_name" {
   description = "name:tag of your Custom Image for Login Nodes"
   type        = string
   default     = null
+}
+
+variable "slurm_acct_node_count" {
+  description = "The number of slurm accounting nodes (runs slurmdbd + MariaDB)."
+  type        = number
+  default     = 1
+}
+
+variable "slurm_acct_node_type" {
+  description = "The slurm accounting node instance type."
+  type        = string
+  default     = "c1a.4x"
+}
+
+variable "slurm_acct_node_reservation_id" {
+  description = "The slurm accounting node reservation id"
+  type        = string
+  default     = null
+}
+
+variable "acct_node_custom_image_name" {
+  description = "name:tag of your Custom Image for the Accounting Node"
+  type        = string
+  default     = null
+}
+
+variable "slurm_acct_disk_size" {
+  description = "The slurm accounting node disk size, used for the MariaDB datadir."
+  type        = string
+  default     = "100GiB"
+}
+
+variable "slurmdbd_mysql_password" {
+  description = "Password for the MySQL/MariaDB 'slurm' user used by slurmdbd. Must be set explicitly; no default is provided."
+  type        = string
+  sensitive   = true
+}
+
+variable "slurm_account_name" {
+  description = "The default sacctmgr account that slurm users are associated with."
+  type        = string
+  default     = "team"
 }

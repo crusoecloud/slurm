@@ -30,14 +30,14 @@
     owner: "{{ user_name }}"
     group: "{{ user_name }}"
     mode: "0755"
-  delegate_to: slurm-login-node-0
+  delegate_to: "{{ groups['slurm_login_nodes'][0] }}"
   run_once: true
 
 - name: "Add authorized key for {{ user_name }}"
   ansible.builtin.authorized_key:
     user: "{{ user_name }}"
     key: "{{ user_ssh_pubkey }}"
-  delegate_to: slurm-login-node-0
+  delegate_to: "{{ groups['slurm_login_nodes'][0] }}"
   run_once: true
 
 - name: "Remove {{ user_name }} sudo access if not sudoer"

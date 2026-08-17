@@ -3,7 +3,7 @@
   with_items: "{{ ansible_mounts }}"
   register: home_mount_exists
   when: item.mount == "/home"
-  delegate_to: slurm-login-node-0
+  delegate_to: "{{ groups['slurm_login_nodes'][0] }}"
   run_once: true
 
 - name: Mount slurm_home_disk to /mnt/home
@@ -14,20 +14,24 @@
     fstype: nfs
     state: mounted
   when: home_mount_exists is skipped
-  delegate_to: slurm-login-node-0
+  delegate_to: "{{ groups['slurm_login_nodes'][0] }}"
   run_once: true
+  register: mount_mnt_home
+  until: mount_mnt_home is succeeded
+  retries: 5
+  delay: 10
 
 - name: Copy /home to /mnt/home
   command: "rsync -a /home/ /mnt/home"
   when: home_mount_exists is skipped
-  delegate_to: slurm-login-node-0
+  delegate_to: "{{ groups['slurm_login_nodes'][0] }}"
   run_once: true
 
 - name: Unmount slurm_home_disk from /mnt/home
   ansible.posix.mount:
     path: /mnt/home
     state: unmounted
-  delegate_to: slurm-login-node-0
+  delegate_to: "{{ groups['slurm_login_nodes'][0] }}"
   run_once: true
 
 - name: Mount vastnfs slurm_home_disk
@@ -37,3 +41,7 @@
     opts: "vers=3,nconnect=16,spread_reads,spread_writes,remoteports={{ vast_nfs_remoteports }},_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=30"
     state: mounted
     fstype: nfs
+  register: mount_home
+  until: mount_home is succeeded
+  retries: 5
+  delay: 10

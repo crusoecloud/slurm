@@ -1,3 +1,13 @@
+- name: Wait for hosts to become SSH reachable
+  hosts: all
+  remote_user: ubuntu
+  gather_facts: false
+  tasks:
+    - name: Wait for SSH connection
+      ansible.builtin.wait_for_connection:
+        delay: 10
+        timeout: 300
+
 - name: Run pre-tasks
   hosts: all
   remote_user: ubuntu
@@ -5,6 +15,13 @@
   roles:
     - pre_tasks
     - hostname
+
+- name: Configure accounting nodes
+  hosts: slurm_acct_nodes
+  remote_user: ubuntu
+  become: true
+  roles:
+    - slurm_acct_node
 
 - name: Configure head nodes
   hosts: slurm_head_nodes
