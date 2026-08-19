@@ -1,0 +1,107 @@
+- name: Create {{ slurm_acct_disk_fstype }} filesystem on {{ slurm_acct_disk_device }}
+  community.general.filesystem:
+    fstype: "{{ slurm_acct_disk_fstype }}"
+    dev: "{{ slurm_acct_disk_device }}"
+
+- name: Mount {{ slurm_acct_disk_device }} to /var/lib/mysql
+  ansible.posix.mount:
+    src: "{{ slurm_acct_disk_device }}"
+    path: /var/lib/mysql
+    fstype: "{{ slurm_acct_disk_fstype }}"
+    opts: "defaults,nofail"
+    state: mounted
+
+- name: Remove mismatched apt slurm-client package if present
+  ansible.builtin.apt:
+    name: slurm-client
+    state: absent
+
+- name: Ensure required packages are installed
+  ansible.builtin.apt:
+    name:
+      - mariadb-server
+      - mariadb-client
+      - python3-pymysql
+    state: latest
+    update_cache: true
+
+- name: Ensure mariadb is started and enabled
+  ansible.builtin.systemd_service:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: Create slurm accounting database
+  community.mysql.mysql_db:
+    name: "{{ slurm_acct_db_name }}"
+    state: present
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+- name: Create slurm accounting database user
+  community.mysql.mysql_user:
+    name: "{{ slurm_acct_db_user }}"
+    password: "{{ slurmdbd_mysql_password }}"
+    priv: "{{ slurm_acct_db_name }}.*:ALL"
+    host: localhost
+    state: present
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+- name: Install slurmdbd.conf
+  ansible.builtin.template:
+    src: slurmdbd.conf
+    dest: /etc/slurm/slurmdbd.conf
+    owner: "{{ slurm_user }}"
+    group: "{{ slurm_group }}"
+    mode: '0600'
+
+- name: Install slurm conf
+  ansible.builtin.import_role:
+    name: slurm_conf
+
+- name: Restart slurmdbd
+  ansible.builtin.systemd_service:
+    name: slurmdbd
+    state: restarted
+    enabled: true
+    daemon_reload: true
+
+- name: Wait for slurmdbd to accept connections
+  ansible.builtin.wait_for:
+    host: "{{ inventory_hostname }}"
+    port: 6819
+    timeout: 60
+
+- name: Check whether cluster is already registered
+  ansible.builtin.command:
+    cmd: "{{ slurm_bin_dir }}/sacctmgr -n -P show cluster {{ slurm_cluster_name }}"
+  register: sacctmgr_show_cluster
+  changed_when: false
+
+- name: Add cluster to sacctmgr
+  ansible.builtin.command:
+    cmd: "{{ slurm_bin_dir }}/sacctmgr -i add cluster {{ slurm_cluster_name }}"
+  when: sacctmgr_show_cluster.stdout == ""
+
+- name: Check whether default account is already registered
+  ansible.builtin.command:
+    cmd: "{{ slurm_bin_dir }}/sacctmgr -n -P show account {{ slurm_account_name }}"
+  register: sacctmgr_show_account
+  changed_when: false
+
+- name: Add default sacctmgr account
+  ansible.builtin.command:
+    cmd: "{{ slurm_bin_dir }}/sacctmgr -i add account {{ slurm_account_name }} Description=default Organization=crusoe"
+  when: sacctmgr_show_account.stdout == ""
+
+- name: Check which cluster users already have an association with the default account
+  ansible.builtin.command:
+    cmd: "{{ slurm_bin_dir }}/sacctmgr -n -P show assoc user={{ item }} account={{ slurm_account_name }}"
+  register: sacctmgr_show_user
+  changed_when: false
+  loop: "{{ [slurm_ssh_provisioning_user] + (slurm_users | from_json | map(attribute='name') | list if slurm_users is defined else []) }}"
+
+- name: Add cluster users to default sacctmgr account
+  ansible.builtin.command:
+    cmd: "{{ slurm_bin_dir }}/sacctmgr -i add user {{ item.item }} Account={{ slurm_account_name }}"
+  loop: "{{ sacctmgr_show_user.results }}"
+  when: item.stdout == ""

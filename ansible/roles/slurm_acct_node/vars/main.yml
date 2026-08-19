@@ -1,0 +1,9 @@
+slurm_user: root
+slurm_group: "{{ slurm_user }}"
+slurm_acct_db_name: slurm_acct_db
+slurm_acct_db_user: slurm
+slurm_bin_dir: /opt/slurm/bin
+slurm_cluster_name: cluster
+slurm_ssh_provisioning_user: ubuntu
+slurm_acct_disk_device: /dev/vdb
+slurm_acct_disk_fstype: xfs

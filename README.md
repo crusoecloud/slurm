@@ -77,6 +77,36 @@ slurm_users = [{
 }]
 ```
 
+### Slurm Accounting
+This solution provisions a dedicated accounting node running `slurmdbd` backed by a local MariaDB database, enabling job accounting via `sacct`, `sreport`, and `sacctmgr`.
+
+By default, a single accounting node is created with a `c1a.4x` instance type and 100GiB of persistent storage for the MariaDB datadir, and a default sacctmgr account named `team` is registered. You must still provide a MySQL/MariaDB password, since no default is provided:
+```
+# slurm accounting (slurmdbd + MariaDB on a dedicated node)
+slurmdbd_mysql_password = "<a strong password>"
+```
+
+These defaults can be overridden in your `terraform.tfvars`:
+```
+# slurm accounting (slurmdbd + MariaDB on a dedicated node)
+slurm_acct_node_count   = 1
+slurm_acct_node_type    = "c1a.16x"
+slurm_acct_disk_size    = "200GiB"
+slurmdbd_mysql_password = "<a strong password>"
+slurm_account_name      = "crusoe"
+```
+
+On `terraform apply`, the accounting node is provisioned, `slurmdbd` and MariaDB are installed and started, and the cluster and default account (`slurm_account_name`) are registered with `sacctmgr`. Every user in `slurm_users`, as well as the SSH provisioning user, is automatically added as an association under that default account.
+
+You can view job history and usage from any login or head node:
+```
+sacct -u <user> --format=JobID,JobName,Partition,State,Elapsed,MaxRSS
+sreport cluster utilization
+sacctmgr show associations
+```
+
+***Note:*** Currently all cluster users share a single sacctmgr account (`slurm_account_name`). Support for assigning users to multiple distinct accounts is not available.
+
 ### Enroot and Pyxis
 This solution provides support for [NVIDIA Enroot](https://github.com/nvidia/enroot)
 and [Pyxis](https://github.com/NVIDIA/pyxis).
