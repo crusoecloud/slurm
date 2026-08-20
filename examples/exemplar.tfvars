@@ -3,6 +3,7 @@ location = ""
 project_id = ""
 ssh_public_key_path = ""
 vpc_subnet_id = ""
+cluster_name="exemplar"
 
 slurm_head_node_count = 1
 slurm_login_node_count = 1
