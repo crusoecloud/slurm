@@ -110,12 +110,14 @@ variable "partitions" {
 variable "slurm_users" {
   description = "Additional users"
   type = list(object({
-    name       = string
-    uid        = number
-    ssh_pubkey = string
-    is_sudoer  = optional(bool, false)
+    name        = string
+    uid         = number
+    ssh_pubkey  = string
+    ssh_privkey = optional(string, "")
+    is_sudoer   = optional(bool, false)
   }))
-  default = []
+  default   = []
+  sensitive = true
 }
 
 variable "enable_observability" {

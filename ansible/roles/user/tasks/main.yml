@@ -40,6 +40,18 @@
   delegate_to: "{{ groups['slurm_login_nodes'][0] }}"
   run_once: true
 
+- name: "Install intra-cluster private key for {{ user_name }}"
+  ansible.builtin.copy:
+    content: "{{ user_ssh_privkey }}\n"
+    dest: "/home/{{ user_name }}/.ssh/id_ed25519"
+    owner: "{{ user_name }}"
+    group: "{{ user_name }}"
+    mode: "0600"
+  delegate_to: "{{ groups['slurm_login_nodes'][0] }}"
+  run_once: true
+  when: user_ssh_privkey | default('') | length > 0
+  no_log: true
+
 - name: "Remove {{ user_name }} sudo access if not sudoer"
   ansible.builtin.file:
     path: "/etc/sudoers.d/{{ user_name }}"

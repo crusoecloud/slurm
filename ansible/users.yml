@@ -9,6 +9,7 @@
       user_name: "{{ item.name }}"
       user_uid: "{{ item.uid }}"
       user_ssh_pubkey: "{{ item.ssh_pubkey }}"
+      user_ssh_privkey: "{{ item.ssh_privkey | default('') }}"
       user_is_sudoer: "{{ item.is_sudoer | default(false) }}"
     loop: "{{ slurm_users | from_json}}"
     when: slurm_users is defined

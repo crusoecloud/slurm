@@ -48,10 +48,14 @@ slurmdbd_mysql_password = "exemplarPA$$w0rd"
 # pre_existing_slurm_data_disk_id = "eda10ac4-0b96-49e0-b709-cfbe443fd66d"
 
 # slurm users configuration
+# ssh_privkey is optional; when set, it is installed as the user's
+# ~/.ssh/id_ed25519 on the login node (shared to compute nodes via NFS
+# /home) so the user can ssh/srun between login and compute nodes.
 slurm_users = [{
-  name      = "exemplar"
-  uid       = 1001
-  ssh_pubkey = ""
-  is_sudoer = true
+  name        = "exemplar"
+  uid         = 1001
+  ssh_pubkey  = ""
+  ssh_privkey = ""
+  is_sudoer   = true
   },
 ]
