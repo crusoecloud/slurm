@@ -1,0 +1,1 @@
+/etc/crusoe/nccl_topo /etc/crusoe/nccl_topo none x-create=dir,bind,ro

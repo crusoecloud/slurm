@@ -32,7 +32,34 @@
     state: directory
     mode: '1777'
   when: (ansible_local.nvme.nvme.count | int) > 0
-    
+
+- name: Ensure Enroot environ.d directory exists
+  ansible.builtin.file:
+    path: /etc/enroot/environ.d
+    state: directory
+    mode: '0755'
+
+- name: Expose NCCL environment variables to Enroot containers
+  ansible.builtin.file:
+    src: /etc/nccl.conf
+    dest: /etc/enroot/environ.d/nccl.env
+    state: link
+    force: true
+
+- name: Ensure Enroot mounts.d directory exists
+  ansible.builtin.file:
+    path: /etc/enroot/mounts.d
+    state: directory
+    mode: '0755'
+
+- name: Bind-mount NCCL topology directory into Enroot containers
+  ansible.builtin.template:
+    src: nccl-topo.fstab
+    dest: /etc/enroot/mounts.d/nccl-topo.fstab
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Mount vastnfs slurm_data_disk
   ansible.posix.mount:
     src: "{{ vast_nfs_server_host }}:/volumes/{{ slurm_data_disk_id | default(crusoe_storage_disk.slurm_data_disk[0].id) }}"
