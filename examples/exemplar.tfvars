@@ -13,7 +13,7 @@ slurm_head_node_type = "c1a.32x"
 # slurm-compute-node configuration
 partitions = [
     {
-      name = ""
+      name = "exemplar"
       count = 64
       type = ""
       imex_support = true
